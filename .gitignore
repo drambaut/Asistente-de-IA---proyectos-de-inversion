@@ -172,3 +172,32 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Project specific
+pdfs/*
+!pdfs/.gitkeep
+*.log
+.coverage
+htmlcov/
+
+# Database
+*.db
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
