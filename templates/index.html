@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Proyectos de Inversión</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        .message {
+            max-width: 80%;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 15px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">
+                Asistente de Proyectos de Inversión
+            </h1>
+            
+            <div id="chat-messages" class="chat-container overflow-y-auto mb-4">
+                <!-- Los mensajes se agregarán aquí dinámicamente -->
+            </div>
+
+            <div class="flex gap-2">
+                <input type="text" id="user-input" 
+                       class="flex-1 p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                       placeholder="Escribe tu mensaje aquí...">
+                <button onclick="sendMessage()" 
+                        class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                    Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 'initial';
+
+        function addMessage(message, isUser = false) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Mostrar mensaje del usuario
+            addMessage(message, true);
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message }),
+                });
+
+                const data = await response.json();
+                currentStep = data.next_step;
+                
+                // Mostrar respuesta del bot
+                addMessage(data.response);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('Lo siento, ha ocurrido un error. Por favor, intente de nuevo.');
+            }
+        }
+
+        // Permitir enviar mensaje con Enter
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Mensaje inicial
+        window.onload = function() {
+            addMessage('¿Desea construir un plan de Inversión asociado a temática de Infraestructura de datos (IDEC)?\nPor favor, responda con "Sí" o "No".');
+        };
+    </script>
+</body>
+</html> 
