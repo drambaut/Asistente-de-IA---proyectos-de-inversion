@@ -1,66 +1,51 @@
 # Asistente de IA para Proyectos de Inversión
 
-Este proyecto implementa un asistente virtual especializado en proyectos de inversión, específicamente enfocado en la temática de Infraestructura de Datos (IDEC). El asistente guía a los usuarios a través de un flujo estructurado para la creación y evaluación de proyectos de inversión.
+Este proyecto es un asistente de IA que ayuda a construir proyectos de inversión siguiendo la metodología MGA. Utiliza ChatGPT para generar documentos profesionales basados en la información proporcionada por el usuario.
 
 ## Características
 
-- Interfaz web interactiva y amigable
-- Flujo guiado para la creación de proyectos de inversión
-- Soporte para múltiples componentes IDEC
-- Análisis de problemas y objetivos
-- Gestión de presupuestos y recursos
-- Evaluación de riesgos y sostenibilidad
-
-## Estructura del Proyecto
-
-```
-.
-├── src/
-│   ├── core/           # Componentes principales
-│   │   └── chatbot.py  # Lógica del chatbot
-│   ├── utils/          # Utilidades
-│   │   └── pdf_processor.py  # Procesamiento de PDFs
-│   ├── web/           # Componentes web
-│   │   ├── app.py     # Aplicación Flask
-│   │   └── templates/ # Plantillas HTML
-│   └── main.py        # Punto de entrada
-├── static/            # Archivos estáticos
-│   ├── css/          # Estilos
-│   └── js/           # Scripts JavaScript
-├── pdfs/             # Documentos PDF
-└── requirements.txt  # Dependencias
-```
+- Interfaz de chat intuitiva y amigable
+- Guía paso a paso para la construcción de proyectos de inversión
+- Generación automática de documentos en formato Word
+- Integración con ChatGPT para contenido profesional
+- Diseño responsivo y moderno
 
 ## Requisitos
 
-- Python 3.11.9 o superior
+- Python 3.8 o superior
 - pip (gestor de paquetes de Python)
-- Git
+- Cuenta de OpenAI con API key
 
 ## Instalación
 
 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/drambaut/Asistente-de-IA---proyectos-de-inversion.git
-cd Asistente-de-IA---proyectos-de-inversion
+git clone https://github.com/tu-usuario/asistente-proyectos-inversion.git
+cd asistente-proyectos-inversion
 ```
 
-2. Crear y activar un entorno virtual (opcional pero recomendado):
+2. Crear un entorno virtual:
 ```bash
 python -m venv venv
 source venv/bin/activate  # En Windows: venv\Scripts\activate
 ```
 
-3. Instalar dependencias:
+3. Instalar las dependencias:
 ```bash
 pip install -r requirements.txt
 ```
 
+4. Configurar las variables de entorno:
+Crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+```
+OPENAI_API_KEY=tu_api_key_aqui
+```
+
 ## Uso
 
-1. Iniciar la aplicación:
+1. Iniciar el servidor:
 ```bash
-python src/main.py
+python src/web/app.py
 ```
 
 2. Abrir el navegador y acceder a:
@@ -68,25 +53,52 @@ python src/main.py
 http://localhost:5000
 ```
 
-3. Seguir el flujo guiado del asistente para crear o evaluar proyectos de inversión.
+3. Seguir las instrucciones del asistente para construir tu proyecto de inversión.
 
-## Flujo de Trabajo
+## Estructura del Proyecto
 
-El asistente guía al usuario a través de los siguientes pasos:
+```
+asistente-proyectos-inversion/
+├── src/
+│   └── web/
+│       ├── app.py
+│       ├── static/
+│       │   ├── documents/
+│       │   └── config.json
+│       └── templates/
+│           └── index.html
+├── requirements.txt
+├── .env
+└── README.md
+```
 
-1. Confirmación de interés en proyectos IDEC
-2. Datos de la Entidad Pública
-3. Selección de componentes IDEC
-4. Definición del problema
-5. Árbol de problemas
-6. Población objetivo
-7. Objetivos del proyecto
-8. Localización
-9. Cadena de valor
-10. Análisis e indicadores
-11. Presupuesto
+## Despliegue en GitHub Pages
 
-## Contribución
+Para desplegar el proyecto en GitHub Pages:
+
+1. Crear un nuevo repositorio en GitHub
+2. Subir el código al repositorio:
+```bash
+git init
+git add .
+git commit -m "Primer commit"
+git remote add origin https://github.com/tu-usuario/asistente-proyectos-inversion.git
+git push -u origin main
+```
+
+3. En la configuración del repositorio en GitHub:
+   - Ir a "Settings" > "Pages"
+   - Seleccionar la rama "main" como fuente
+   - Guardar los cambios
+
+4. El sitio estará disponible en:
+```
+https://tu-usuario.github.io/asistente-proyectos-inversion
+```
+
+## Contribuir
+
+Las contribuciones son bienvenidas. Por favor, sigue estos pasos:
 
 1. Fork el repositorio
 2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
@@ -100,6 +112,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## Contacto
 
-Daniel Felipe Rambaut Lemus - [@drambaut](https://github.com/drambaut)
+Tu Nombre - [@tutwitter](https://twitter.com/tutwitter) - email@ejemplo.com
 
-Link del proyecto: [https://github.com/drambaut/Asistente-de-IA---proyectos-de-inversion](https://github.com/drambaut/Asistente-de-IA---proyectos-de-inversion)
+Link del Proyecto: [https://github.com/tu-usuario/asistente-proyectos-inversion](https://github.com/tu-usuario/asistente-proyectos-inversion)

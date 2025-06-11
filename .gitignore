@@ -201,3 +201,29 @@ htmlcov/
 *.bak
 *.swp
 *~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.env
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de documentos generados
+src/web/static/documents/
+
+# Logs
+*.log
