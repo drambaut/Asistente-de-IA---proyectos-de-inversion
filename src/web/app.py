@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, send_from_directory, url_for
+from flask_cors import CORS
 import os
 from datetime import datetime
 import logging
@@ -10,14 +11,17 @@ from dotenv import load_dotenv
 import json
 
 # Configurar logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)  # Cambiar a INFO para producción
 logger = logging.getLogger(__name__)
 
 # Cargar variables de entorno
 load_dotenv()
 
 app = Flask(__name__, static_folder='static')
-app.secret_key = 'idec_secret_key'  # Clave secreta para las sesiones
+CORS(app)  # Habilitar CORS para todos los endpoints
+
+# Configurar clave secreta desde variable de entorno o usar una por defecto
+app.secret_key = os.getenv('SECRET_KEY', 'idec_secret_key_change_in_production')
 
 # Asegurarse de que el directorio de documentos existe
 DOCUMENTS_DIR = os.path.join(app.static_folder, 'documents')
@@ -118,7 +122,32 @@ def chat():
         
         # Paso inicial
         if current_step == 'initial':
-            if user_message in ['si', 'sí', 'claro', 'de acuerdo', 'correcto', 'ok', 'okay', 'por supuesto', 'afirmativo']:
+            # Lista de respuestas afirmativas
+            respuestas_afirmativas = [
+                'si', 'sí', 'claro', 'de acuerdo', 'correcto', 'ok', 'okay', 
+                'por supuesto', 'afirmativo', 'adelante', 'continuar', 'proceder',
+                'empecemos', 'vamos', 'comencemos', 'iniciar', 'comenzar',
+                'listo', 'preparado', 'listo estoy', 'estoy listo', 'listo para empezar',
+                'quiero', 'deseo', 'me gustaría', 'quiero empezar', 'deseo empezar',
+                'me gustaría empezar', 'quiero continuar', 'deseo continuar',
+                'me gustaría continuar', 'quiero proceder', 'deseo proceder',
+                'me gustaría proceder', 'quiero iniciar', 'deseo iniciar',
+                'me gustaría iniciar', 'quiero comenzar', 'deseo comenzar',
+                'me gustaría comenzar', 'quiero seguir', 'deseo seguir',
+                'me gustaría seguir', 'quiero avanzar', 'deseo avanzar',
+                'me gustaría avanzar', 'quiero proseguir', 'deseo proseguir',
+                'me gustaría proseguir', 'quiero seguir adelante', 'deseo seguir adelante',
+                'me gustaría seguir adelante', 'quiero continuar adelante', 'deseo continuar adelante',
+                'me gustaría continuar adelante', 'quiero proceder adelante', 'deseo proceder adelante',
+                'me gustaría proceder adelante', 'quiero iniciar adelante', 'deseo iniciar adelante',
+                'me gustaría iniciar adelante', 'quiero comenzar adelante', 'deseo comenzar adelante',
+                'me gustaría comenzar adelante', 'quiero seguir adelante', 'deseo seguir adelante',
+                'me gustaría seguir adelante', 'quiero avanzar adelante', 'deseo avanzar adelante',
+                'me gustaría avanzar adelante', 'quiero proseguir adelante', 'deseo proseguir adelante',
+                'me gustaría proseguir adelante'
+            ]
+            
+            if user_message in respuestas_afirmativas:
                 session['current_step'] = 'entidad_nombre'
                 return jsonify({
                     'response': 'Por favor, ingrese el nombre de la entidad pública:',
@@ -250,6 +279,15 @@ def download_file(filename):
         logger.error(f"Error descargando archivo: {str(e)}")
         return "Error al descargar el archivo", 404
 
+@app.route('/config.json')
+def serve_config():
+    try:
+        config_path = os.path.join(app.static_folder, 'config.json')
+        return send_from_directory(app.static_folder, 'config.json')
+    except Exception as e:
+        logger.error(f"Error sirviendo config.json: {str(e)}")
+        return jsonify({'error': 'Configuración no disponible'}), 404
+
 # Generar archivo de configuración para GitHub Pages
 def generate_github_pages_config():
     config = {
@@ -257,9 +295,11 @@ def generate_github_pages_config():
         'api_endpoint': '/api/chat'
     }
     
-    with open('static/config.json', 'w') as f:
+    # Crear el archivo en la carpeta static del directorio actual
+    config_path = os.path.join(app.static_folder, 'config.json')
+    with open(config_path, 'w') as f:
         json.dump(config, f, indent=2)
 
 if __name__ == '__main__':
     generate_github_pages_config()
-    app.run(debug=True) 
+    app.run(host='0.0.0.0', port=5001, debug=True) 

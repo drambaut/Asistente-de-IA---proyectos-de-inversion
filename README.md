@@ -16,7 +16,7 @@ Este proyecto es un asistente de IA que ayuda a construir proyectos de inversió
 - pip (gestor de paquetes de Python)
 - Cuenta de OpenAI con API key
 
-## Instalación
+## Instalación Local
 
 1. Clonar el repositorio:
 ```bash
@@ -39,13 +39,14 @@ pip install -r requirements.txt
 Crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 ```
 OPENAI_API_KEY=tu_api_key_aqui
+SECRET_KEY=tu_clave_secreta_aqui
 ```
 
-## Uso
+## Uso Local
 
 1. Iniciar el servidor:
 ```bash
-python src/web/app.py
+python src/main.py
 ```
 
 2. Abrir el navegador y acceder a:
@@ -53,13 +54,92 @@ python src/web/app.py
 http://localhost:5000
 ```
 
-3. Seguir las instrucciones del asistente para construir tu proyecto de inversión.
+## Despliegue en Producción
+
+### Opción 1: Despliegue Simple (Heroku, Railway, Render)
+
+1. **Heroku**:
+   ```bash
+   # Instalar Heroku CLI
+   heroku create tu-app-name
+   heroku config:set OPENAI_API_KEY=tu_api_key
+   heroku config:set SECRET_KEY=tu_clave_secreta
+   git push heroku main
+   ```
+
+2. **Railway**:
+   - Conectar tu repositorio de GitHub
+   - Configurar variables de entorno en el dashboard
+   - El despliegue será automático
+
+3. **Render**:
+   - Crear nuevo Web Service
+   - Conectar repositorio de GitHub
+   - Configurar variables de entorno
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn wsgi:app`
+
+### Opción 2: Docker
+
+1. **Construir y ejecutar con Docker**:
+   ```bash
+   # Construir la imagen
+   docker build -t asistente-ia .
+   
+   # Ejecutar el contenedor
+   docker run -p 8000:8000 -e OPENAI_API_KEY=tu_api_key asistente-ia
+   ```
+
+2. **Usar Docker Compose**:
+   ```bash
+   # Crear archivo .env con las variables
+   echo "OPENAI_API_KEY=tu_api_key" > .env
+   echo "SECRET_KEY=tu_clave_secreta" >> .env
+   
+   # Ejecutar con docker-compose
+   docker-compose up -d
+   ```
+
+### Opción 3: VPS con Docker
+
+1. **En tu servidor**:
+   ```bash
+   # Clonar el repositorio
+   git clone https://github.com/tu-usuario/asistente-proyectos-inversion.git
+   cd asistente-proyectos-inversion
+   
+   # Configurar variables de entorno
+   nano .env
+   
+   # Ejecutar con docker-compose
+   docker-compose up -d
+   ```
+
+2. **Configurar Nginx** (opcional):
+   ```nginx
+   server {
+       listen 80;
+       server_name tu-dominio.com;
+       
+       location / {
+           proxy_pass http://localhost:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+       }
+   }
+   ```
+
+## Variables de Entorno
+
+- `OPENAI_API_KEY`: Tu clave de API de OpenAI (requerida)
+- `SECRET_KEY`: Clave secreta para las sesiones de Flask (recomendada para producción)
 
 ## Estructura del Proyecto
 
 ```
 asistente-proyectos-inversion/
 ├── src/
+│   ├── main.py
 │   └── web/
 │       ├── app.py
 │       ├── static/
@@ -68,39 +148,28 @@ asistente-proyectos-inversion/
 │       └── templates/
 │           └── index.html
 ├── requirements.txt
+├── wsgi.py
+├── Procfile
+├── Dockerfile
+├── docker-compose.yml
 ├── .env
 └── README.md
 ```
 
-## Despliegue en GitHub Pages
+## Solución de Problemas
 
-Para desplegar el proyecto en GitHub Pages:
+### Error de importación del módulo chatbot
+Si encuentras errores relacionados con `src.core.chatbot`, puedes comentar esa línea en `src/main.py` ya que no parece estar siendo utilizada en la aplicación web.
 
-1. Crear un nuevo repositorio en GitHub
-2. Subir el código al repositorio:
+### Error de permisos en Docker
+Asegúrate de que el directorio `src/web/static/documents` tenga los permisos correctos:
 ```bash
-git init
-git add .
-git commit -m "Primer commit"
-git remote add origin https://github.com/tu-usuario/asistente-proyectos-inversion.git
-git push -u origin main
-```
-
-3. En la configuración del repositorio en GitHub:
-   - Ir a "Settings" > "Pages"
-   - Seleccionar la rama "main" como fuente
-   - Guardar los cambios
-
-4. El sitio estará disponible en:
-```
-https://tu-usuario.github.io/asistente-proyectos-inversion
+chmod 755 src/web/static/documents
 ```
 
 ## Contribuir
 
-Las contribuciones son bienvenidas. Por favor, sigue estos pasos:
-
-1. Fork el repositorio
+1. Fork el proyecto
 2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
 3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
