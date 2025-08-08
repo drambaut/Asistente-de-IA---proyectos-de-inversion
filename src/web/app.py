@@ -27,8 +27,17 @@ app.secret_key = os.getenv('SECRET_KEY', 'idec_secret_key_change_in_production')
 DOCUMENTS_DIR = os.path.join(app.static_folder, 'documents')
 os.makedirs(DOCUMENTS_DIR, exist_ok=True)
 
-# Configurar OpenAI
+# Configurar Azure OpenAI
 openai.api_key = os.getenv('OPENAI_API_KEY')
+openai.api_base = os.getenv('OPENAI_API_BASE')
+openai.api_type = "azure"
+openai.api_version = "2025-01-01-preview"
+
+# Validar que las variables de entorno estén configuradas
+if not openai.api_key:
+    raise ValueError("OPENAI_API_KEY no está configurada en el archivo .env")
+if not openai.api_base:
+    raise ValueError("OPENAI_API_BASE no está configurada en el archivo .env")
 
 # Definir el flujo de la conversación
 conversation_flow = {
@@ -232,9 +241,9 @@ def generate_document_with_gpt(responses):
         8. Presupuesto y detalles financieros
         """
 
-        # Llamar a la API de ChatGPT
+        # Llamar a la API de Azure OpenAI
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            engine="gpt-4o-mini",  # Nombre del deployment en Azure
             messages=[
                 {"role": "system", "content": "Eres un experto en redacción de proyectos de inversión."},
                 {"role": "user", "content": prompt}

@@ -1,20 +1,20 @@
 # Asistente de IA para Proyectos de Inversión
 
-Este proyecto es un asistente de IA que ayuda a construir proyectos de inversión siguiendo la metodología MGA. Utiliza ChatGPT para generar documentos profesionales basados en la información proporcionada por el usuario.
+Este proyecto es un asistente de IA que ayuda a construir proyectos de inversión siguiendo la metodología MGA. Utiliza Azure OpenAI (GPT-4o-mini) para generar documentos profesionales basados en la información proporcionada por el usuario.
 
 ## Características
 
 - Interfaz de chat intuitiva y amigable
 - Guía paso a paso para la construcción de proyectos de inversión
 - Generación automática de documentos en formato Word
-- Integración con ChatGPT para contenido profesional
+- Integración con Azure OpenAI (GPT-4o-mini) para contenido profesional
 - Diseño responsivo y moderno
 
 ## Requisitos
 
 - Python 3.8 o superior
 - pip (gestor de paquetes de Python)
-- Cuenta de OpenAI con API key
+- Cuenta de Azure OpenAI con API key y deployment configurado
 
 ## Instalación Local
 
@@ -38,9 +38,15 @@ pip install -r requirements.txt
 4. Configurar las variables de entorno:
 Crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 ```
-OPENAI_API_KEY=tu_api_key_aqui
+# Configuración de Azure OpenAI
+OPENAI_API_KEY=tu_api_key_de_azure_openai
+OPENAI_API_BASE=https://tu-instancia.openai.azure.com
+
+# Clave secreta para Flask (cambiar en producción)
 SECRET_KEY=tu_clave_secreta_aqui
 ```
+
+**Nota**: Reemplaza `tu_api_key_de_azure_openai` y `https://tu-instancia.openai.azure.com` con tus credenciales reales de Azure OpenAI.
 
 ## Uso Local
 
@@ -131,7 +137,8 @@ http://localhost:5000
 
 ## Variables de Entorno
 
-- `OPENAI_API_KEY`: Tu clave de API de OpenAI (requerida)
+- `OPENAI_API_KEY`: Tu clave de API de Azure OpenAI (requerida)
+- `OPENAI_API_BASE`: URL base de tu instancia de Azure OpenAI (requerida)
 - `SECRET_KEY`: Clave secreta para las sesiones de Flask (recomendada para producción)
 
 ## Estructura del Proyecto
@@ -166,6 +173,12 @@ Asegúrate de que el directorio `src/web/static/documents` tenga los permisos co
 ```bash
 chmod 755 src/web/static/documents
 ```
+
+### Error de variables de entorno
+Si recibes errores sobre variables de entorno no configuradas:
+1. Verifica que el archivo `.env` existe en la raíz del proyecto
+2. Asegúrate de que las variables `OPENAI_API_KEY` y `OPENAI_API_BASE` estén configuradas
+3. Reinicia la aplicación después de crear/modificar el archivo `.env`
 
 ## Contribuir
 
