@@ -1,74 +1,132 @@
 {
   "conversation_flow": {
+    "welcome_message": {
+      "prompt": "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\nTe acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación, incorporando los enfoques técnicos y estratégicos de las guías de Infraestructura de datos del Estado Colombiano (IDEC) e Inteligencia artificial.\n\n🧰 A lo largo del proceso, te haré preguntas que nos permitirán construir los elementos clave del proyecto: desde la definición del problema, identificación de causas y objetivos (árboles de problema), hasta la justificación, la población beneficiaria, y el desarrollo de objetivos, cadena de valor, indicadores, presupuesto, cronograma y demás componentes técnicos.\n\n❓ ¿Tienes dudas generales antes de empezar?\n\nAntes de continuar, me gustaría saber si tienes claridad sobre el proceso general de formulación de proyectos. Si lo necesitas, puedo explicarte brevemente en qué consiste cada fase del ciclo de inversión pública:\n\nPor favor, selecciona una opción:",
+      "options": [
+        "Sí, entiendo el proceso y deseo continuar",
+        "No del todo, me gustaría una breve explicación",
+        "Tengo dudas puntuales sobre los lineamientos del Plan Nacional de Infraestructura de Datos (PNID) o del CONPES 4144 de Inteligencia Artificial"
+      ],
+      "next_step": "handle_welcome_choice"
+    },
+    "cycle_question": {
+      "prompt": "¿Conoces el ciclo de inversión pública y las fases que lo componen?",
+      "options": [
+        "Sí, lo conozco",
+        "No, me gustaría entenderlo mejor"
+      ],
+      "next_step": "handle_cycle_choice"
+    },
+    "cycle_explanation": {
+      "prompt": "No te preocupes. El ciclo de inversión pública incluye las siguientes etapas:\n\n• Identificación del problema u oportunidad de mejora\n• Formulación de alternativas y estructuración técnica y financiera\n• Evaluación y viabilidad del proyecto\n• Registro en el Banco de Programas y Proyectos (BPIN)\n• Implementación, seguimiento y evaluación\n\n📘 Puedes conocer más en la Guía MGA del DNP\n\n¿Estás listo para comenzar con la formulación de tu proyecto?",
+      "options": [
+        "Sí, comenzar con la formulación"
+      ],
+      "next_step": "start_formulation"
+    },
+    "brief_explanation": {
+      "prompt": "📋 **Breve explicación del ciclo de inversión pública:**\n\nEl ciclo de inversión pública consta de las siguientes fases principales:\n\n1. **Pre-inversión**: Identificación, preparación y evaluación del proyecto\n2. **Inversión**: Ejecución del proyecto\n3. **Operación**: Funcionamiento y mantenimiento del proyecto\n\nEn la fase de **Pre-inversión** (donde nos enfocaremos), seguiremos la Metodología General Ajustada (MGA) que incluye:\n\n• **Identificación**: Definir el problema y sus causas\n• **Preparación**: Formular alternativas de solución\n• **Evaluación**: Analizar viabilidad técnica, financiera y social\n\nPara proyectos IDEC/IA, incorporaremos elementos específicos como:\n- Arquitectura de datos\n- Interoperabilidad\n- Seguridad y privacidad\n- Gobernanza de datos\n- Componentes de IA\n\n¿Estás listo para comenzar con la formulación de tu proyecto?",
+      "options": [
+        "Sí, comenzar con la formulación",
+        "Necesito más información sobre IDEC/IA"
+      ],
+      "next_step": "handle_explanation_choice"
+    },
+    "idec_ia_info": {
+      "prompt": "📚 **Información sobre lineamientos IDEC e IA:**\n\n**Plan Nacional de Infraestructura de Datos (PNID):**\n- Marco estratégico para la gestión de datos del Estado\n- Enfoque en interoperabilidad, calidad y seguridad de datos\n- Componentes: Gobernanza, arquitectura, estándares y herramientas\n\n**CONPES 4144 - Política Nacional de Inteligencia Artificial:**\n- Estrategia nacional para adopción responsable de IA\n- Pilares: Talento humano, investigación, marco ético y regulatorio\n- Sectores prioritarios: Salud, educación, justicia, agricultura\n\n**Componentes técnicos clave para tu proyecto:**\n• Arquitectura de datos y sistemas\n• Modelos de IA y algoritmos\n• Interfaces y APIs\n• Seguridad y privacidad\n• Monitoreo y evaluación\n\n¿Estás listo para iniciar la formulación considerando estos lineamientos?",
+      "options": [
+        "Sí, iniciar formulación con enfoque IDEC/IA",
+        "Necesito más detalles específicos"
+      ],
+      "next_step": "handle_info_choice"
+    },
     "entidad_nombre": {
-      "prompt": "Por favor, ingrese el nombre de la entidad p\u00fablica:",
+      "prompt": "🏛️ **Información de la Entidad Ejecutora**\n\nComencemos identificando la entidad que ejecutará el proyecto.\n\nPor favor, ingrese el **nombre completo de la entidad pública** que será responsable de la ejecución del proyecto:",
       "next_step": "entidad_sector"
     },
     "entidad_sector": {
-      "prompt": "Por favor, ingrese el sector al que pertenece la entidad:",
-      "next_step": "componentes_idec"
+      "prompt": "🏢 **Sector de la Entidad**\n\nPor favor, especifique el **sector al que pertenece la entidad** (ejemplo: Salud, Educación, Hacienda, Tecnologías de la Información, etc.):",
+      "next_step": "tipo_proyecto"
     },
-    "componentes_idec": {
-      "prompt": "Seleccione los componentes IDEC que desea incluir en su proyecto (puede seleccionar varios):",
+    "tipo_proyecto": {
+      "prompt": "🎯 **Tipo de Proyecto**\n\nPara estructurar adecuadamente tu proyecto, necesito conocer el enfoque principal.\n\n¿Tu proyecto se enfoca principalmente en:",
       "options": [
-        "Gobernanza de datos",
-        "Interoperabilidad",
-        "Herramientas t\u00e9cnicas y tecnol\u00f3gicas",
-        "Seguridad y privacidad de datos",
-        "Datos",
-        "Aprovechamiento de datos"
+        "Infraestructura de Datos (IDEC) - Gestión, interoperabilidad, calidad de datos",
+        "Inteligencia Artificial - Modelos, algoritmos, automatización",
+        "Proyecto híbrido - Combina elementos de IDEC e IA"
       ],
-      "min_selections": 1,
-      "next_step": "problema_descripcion"
+      "next_step": "problema_identificacion"
     },
-    "problema_descripcion": {
-      "prompt": "Describa la problem\u00e1tica o oportunidad que su proyecto busca atender (m\u00e1ximo 500 caracteres):",
-      "next_step": "situacion_actual"
+    "problema_identificacion": {
+      "prompt": "🎯 **Identificación del Problema**\n\nAhora vamos a definir el problema que tu proyecto busca resolver. Esta es la base fundamental de toda la formulación.\n\n**Describe detalladamente el problema o necesidad** que el proyecto pretende atender:\n\n- ¿Cuál es la situación problemática actual?\n- ¿Cómo se manifiesta este problema?\n- ¿Qué evidencia tienes de que existe este problema?\n\n(Máximo 800 caracteres)",
+      "next_step": "causas_problema"
     },
-    "situacion_actual": {
-      "prompt": "Describa la situaci\u00f3n actual de la problem\u00e1tica (m\u00e1ximo 500 caracteres):",
-      "next_step": "causas_efectos"
+    "causas_problema": {
+      "prompt": "🌳 **Análisis de Causas**\n\nPara construir el árbol de problemas, identifiquemos las causas que originan la problemática.\n\n**Lista las principales causas** que generan el problema identificado:\n\n- Causas directas (que provocan inmediatamente el problema)\n- Causas indirectas (que están detrás de las causas directas)\n- Considera aspectos técnicos, organizacionales, normativos, de recursos, etc.\n\n(Máximo 800 caracteres)",
+      "next_step": "efectos_problema"
     },
-    "causas_efectos": {
-      "prompt": "Liste las causas y efectos de la problem\u00e1tica (m\u00e1ximo 500 caracteres):",
+    "efectos_problema": {
+      "prompt": "📊 **Análisis de Efectos**\n\nAhora identifiquemos los efectos o consecuencias que genera el problema.\n\n**Describe los principales efectos** que produce la problemática identificada:\n\n- Efectos directos (consecuencias inmediatas del problema)\n- Efectos indirectos (consecuencias de los efectos directos)\n- Impactos en la población, en la entidad, en otros sectores\n\n(Máximo 800 caracteres)",
       "next_step": "poblacion_afectada"
     },
     "poblacion_afectada": {
-      "prompt": "Describa la poblaci\u00f3n afectada (cantidad y tipo de poblaci\u00f3n, m\u00e1ximo 300 caracteres):",
+      "prompt": "👥 **Población Afectada**\n\nIdentifiquemos quiénes se ven impactados por esta problemática.\n\n**Describe la población afectada** por el problema:\n\n- ¿Quiénes son los afectados? (ciudadanos, funcionarios, empresas, etc.)\n- ¿Cuántas personas aproximadamente?\n- ¿En qué ubicación geográfica?\n- ¿Qué características específicas tienen?\n\n(Máximo 600 caracteres)",
       "next_step": "objetivo_general"
     },
     "objetivo_general": {
-      "prompt": "Describa el objetivo general del proyecto (m\u00e1ximo 300 caracteres):",
+      "prompt": "🎯 **Objetivo General**\n\nCon base en el problema identificado, definamos el objetivo principal del proyecto.\n\n**Formula el objetivo general** que el proyecto pretende alcanzar:\n\n- Debe ser claro, medible y alcanzable\n- Debe responder directamente al problema identificado\n- Utiliza verbos en infinitivo (mejorar, implementar, desarrollar, etc.)\n\n(Máximo 400 caracteres)",
       "next_step": "objetivos_especificos"
     },
     "objetivos_especificos": {
-      "prompt": "Describa los objetivos espec\u00edficos del proyecto (m\u00e1ximo 500 caracteres):",
+      "prompt": "📋 **Objetivos Específicos**\n\nLos objetivos específicos detallan cómo se logrará el objetivo general.\n\n**Lista los objetivos específicos** del proyecto:\n\n- Deben ser concretos y medibles\n- Cada uno debe contribuir al logro del objetivo general\n- Considera aspectos técnicos, de implementación, de capacitación, etc.\n\n(Máximo 800 caracteres)",
+      "next_step": "justificacion"
+    },
+    "justificacion": {
+      "prompt": "📝 **Justificación del Proyecto**\n\nExpliquemos por qué es importante ejecutar este proyecto.\n\n**Proporciona la justificación** del proyecto considerando:\n\n- Importancia del problema para la entidad/sector\n- Beneficios esperados de la solución\n- Alineación con políticas públicas (PNID, CONPES 4144, etc.)\n- Urgencia de la intervención\n\n(Máximo 1000 caracteres)",
       "next_step": "localizacion"
     },
     "localizacion": {
-      "prompt": "Describa la localizaci\u00f3n del proyecto (territorial, nacional, departamental, etc., m\u00e1ximo 300 caracteres):",
+      "prompt": "📍 **Localización del Proyecto**\n\nDefinamos dónde se ejecutará el proyecto.\n\n**Describe la localización** del proyecto:\n\n- Cobertura geográfica (nacional, departamental, municipal, etc.)\n- Ubicaciones específicas donde se implementará\n- Justificación de la localización elegida\n\n(Máximo 400 caracteres)",
+      "next_step": "alternativas_solucion"
+    },
+    "alternativas_solucion": {
+      "prompt": "💡 **Alternativas de Solución**\n\nIdentifiquemos las posibles alternativas para resolver el problema.\n\n**Describe las alternativas de solución** evaluadas:\n\n- Alternativa 1: ¿Cuál sería?\n- Alternativa 2: ¿Existe otra opción?\n- ¿Por qué se selecciona una alternativa específica?\n- Considera aspectos técnicos, de costos, de tiempo\n\n(Máximo 800 caracteres)",
+      "next_step": "componentes_tecnicos"
+    },
+    "componentes_tecnicos": {
+      "prompt": "⚙️ **Componentes Técnicos**\n\nDefinamos los componentes técnicos específicos del proyecto IDEC/IA.\n\n**Describe los componentes técnicos principales**:\n\nPara proyectos IDEC: Arquitectura de datos, APIs, estándares, seguridad\nPara proyectos IA: Modelos, algoritmos, datasets, infraestructura computacional\nPara proyectos híbridos: Combinación de ambos\n\n(Máximo 800 caracteres)",
       "next_step": "cadena_valor"
     },
     "cadena_valor": {
-      "prompt": "Describa la cadena de valor del proyecto (m\u00e1ximo 500 caracteres):",
+      "prompt": "🔗 **Cadena de Valor**\n\nDescribamos cómo el proyecto genera valor desde los insumos hasta los impactos.\n\n**Define la cadena de valor** del proyecto:\n\n- **Insumos**: Recursos necesarios (humanos, técnicos, financieros)\n- **Actividades**: Qué se hará específicamente\n- **Productos**: Qué se entregará\n- **Resultados**: Cambios esperados en el corto plazo\n- **Impactos**: Efectos de largo plazo\n\n(Máximo 1000 caracteres)",
+      "next_step": "indicadores"
+    },
+    "indicadores": {
+      "prompt": "📊 **Indicadores de Seguimiento**\n\nDefinamos cómo mediremos el éxito del proyecto.\n\n**Propone indicadores** para medir:\n\n- **Indicadores de producto**: ¿Qué entregas mediremos?\n- **Indicadores de resultado**: ¿Qué cambios mediremos?\n- **Indicadores de impacto**: ¿Qué efectos de largo plazo mediremos?\n\nPara cada indicador incluye: nombre, unidad de medida, meta\n\n(Máximo 800 caracteres)",
       "next_step": "riesgos"
     },
     "riesgos": {
-      "prompt": "Liste y describa los riesgos identificados (m\u00e1ximo 500 caracteres):",
+      "prompt": "⚠️ **Análisis de Riesgos**\n\nIdentifiquemos los principales riesgos que pueden afectar el proyecto.\n\n**Lista y describe los riesgos identificados**:\n\n- Riesgos técnicos (tecnología, implementación)\n- Riesgos de recursos (presupuesto, personal)\n- Riesgos normativos (cambios regulatorios)\n- Riesgos organizacionales (resistencia al cambio)\n\nPara cada riesgo indica: probabilidad, impacto y medida de mitigación\n\n(Máximo 800 caracteres)",
       "next_step": "sostenibilidad"
     },
     "sostenibilidad": {
-      "prompt": "Describa la estrategia de sostenibilidad (m\u00e1ximo 500 caracteres):",
+      "prompt": "🌱 **Estrategia de Sostenibilidad**\n\nDefinamos cómo se mantendrá el proyecto en el tiempo.\n\n**Describe la estrategia de sostenibilidad**:\n\n- **Sostenibilidad técnica**: Mantenimiento, actualizaciones\n- **Sostenibilidad financiera**: Fuentes de financiación continua\n- **Sostenibilidad institucional**: Capacidades, procesos\n- **Sostenibilidad ambiental**: Impacto ecológico\n\n(Máximo 800 caracteres)",
       "next_step": "presupuesto_general"
     },
     "presupuesto_general": {
-      "prompt": "Describa el presupuesto general del proyecto (m\u00e1ximo 500 caracteres):",
-      "next_step": "presupuesto_detalle"
+      "prompt": "💰 **Presupuesto General**\n\nEstimemos el costo total del proyecto.\n\n**Proporciona el presupuesto general**:\n\n- Costo total estimado del proyecto\n- Fuentes de financiación (recursos propios, crédito, cooperación, etc.)\n- Distribución por años (si aplica)\n- Justificación del monto estimado\n\n(Máximo 600 caracteres)",
+      "next_step": "presupuesto_detallado"
     },
-    "presupuesto_detalle": {
-      "prompt": "Describa el detalle del presupuesto por actividad (m\u00e1ximo 500 caracteres):",
+    "presupuesto_detallado": {
+      "prompt": "📋 **Presupuesto Detallado**\n\nDesglosa el presupuesto por componentes principales.\n\n**Detalla el presupuesto por rubros**:\n\n- Personal (salarios, honorarios)\n- Tecnología (hardware, software, licencias)\n- Capacitación y formación\n- Infraestructura\n- Otros gastos operativos\n\n(Máximo 800 caracteres)",
+      "next_step": "cronograma"
+    },
+    "cronograma": {
+      "prompt": "📅 **Cronograma del Proyecto**\n\nDefinamos los tiempos de ejecución del proyecto.\n\n**Describe el cronograma general**:\n\n- Duración total del proyecto\n- Fases principales y su duración\n- Hitos importantes y fechas clave\n- Actividades críticas que no pueden retrasarse\n\n(Máximo 600 caracteres)",
       "next_step": "end"
     }
   },
-  "api_endpoint": "/api/chat"
+  "api_endpoint": "/api/chat",
+  "version": "2.0",
+  "description": "Asistente para formulación de proyectos de inversión MGA/IDEC/IA"
 }

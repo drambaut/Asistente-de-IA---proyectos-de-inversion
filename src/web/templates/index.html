@@ -239,8 +239,8 @@
             .then(response => response.json())
             .then(data => {
                 config = data;
-                // Mostrar mensaje inicial
-                addMessage('¡Bienvenido! Soy su asistente para la construcción de proyectos de inversión. ¿Desea comenzar?', 'bot');
+                // Iniciar conversación automáticamente con el mensaje de bienvenida completo
+                sendMessage('iniciar');
             })
             .catch(error => {
                 console.error('Error cargando la configuración:', error);
@@ -273,39 +273,25 @@
                 html += `<button class="option-button" data-option="${option}">${option}</button>`;
             });
             
-            html += '<button class="submit-selections" disabled>Confirmar selección</button>';
             html += '</div>';
             
             messageDiv.innerHTML = html;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
-            // Agregar event listeners a los botones
+            // Agregar event listeners a los botones para selección única
             const optionButtons = messageDiv.querySelectorAll('.option-button');
-            const submitButton = messageDiv.querySelector('.submit-selections');
             
             optionButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const option = button.dataset.option;
-                    if (button.classList.contains('selected')) {
-                        button.classList.remove('selected');
-                        selectedOptions = selectedOptions.filter(opt => opt !== option);
-                    } else {
-                        button.classList.add('selected');
-                        selectedOptions.push(option);
-                    }
                     
-                    // Habilitar/deshabilitar botón de confirmar
-                    submitButton.disabled = selectedOptions.length === 0;
+                    // Mostrar la opción seleccionada como mensaje del usuario
+                    addMessage(option, 'user');
+                    
+                    // Enviar la selección al servidor
+                    sendMessage(option);
                 });
-            });
-            
-            submitButton.addEventListener('click', () => {
-                if (selectedOptions.length > 0) {
-                    const selectedText = selectedOptions.join(', ');
-                    addMessage(selectedText, 'user');
-                    sendMessage(selectedText);
-                }
             });
         }
 
@@ -339,17 +325,9 @@
                 hideLoading();
 
                 if (data.response) {
-                    // Verificar si es el paso de componentes IDEC
-                    if (data.current_step === 'componentes_idec') {
-                        const options = [
-                            'Gobernanza de datos',
-                            'Interoperabilidad',
-                            'Herramientas técnicas y tecnológicas',
-                            'Seguridad y privacidad de datos',
-                            'Datos',
-                            'Aprovechamiento de datos'
-                        ];
-                        addOptionsMessage(data.response, options);
+                    // Verificar si hay opciones disponibles
+                    if (data.options && data.options.length > 0) {
+                        addOptionsMessage(data.response, data.options);
                     } else {
                         addMessage(data.response, 'bot');
                     }
