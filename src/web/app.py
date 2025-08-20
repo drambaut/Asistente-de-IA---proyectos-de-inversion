@@ -86,11 +86,31 @@ Por favor, selecciona una opción:''',
 
 📘 Puedes conocer más en la Guía MGA del DNP
 
+Ahora continuemos...''',
+        'next_step': 'tool_application_question'
+    },
+    'tool_application_question': {
+        'prompt': '''¿Tienes claro en qué parte del proceso de inversión se aplica esta herramienta?''',
+        'options': [
+            'Sí, sé que corresponde a la etapa previa de formulación',
+            'No, no lo tengo claro'
+        ],
+        'next_step': 'handle_tool_application_choice'
+    },
+    'tool_application_explanation': {
+        'prompt': '''Esta herramienta te será útil especialmente en la etapa previa de formulación del proyecto, donde se definen el problema, los objetivos, las alternativas, los beneficiarios, los costos y los componentes técnicos, alineados con la MGA.
+
 ¿Estás listo para comenzar con la formulación de tu proyecto?''',
         'options': [
             'Sí, comenzar con la formulación'
         ],
-        'next_step': 'start_formulation'
+        'next_step': 'confirmation_message'
+    },
+    'confirmation_message': {
+        'prompt': '''✅ Gracias. Con esta información ya podemos iniciar el flujo principal para estructurar tu proyecto de inversión en IDEC o IA.
+
+Si responde "Sí", pasar a la siguiente sección''',
+        'next_step': 'entidad_nombre'
     },
     'brief_explanation': {
         'prompt': '''📋 **Breve explicación del ciclo de inversión pública:**
@@ -149,29 +169,76 @@ Para proyectos IDEC/IA, incorporaremos elementos específicos como:
         'next_step': 'handle_info_choice'
     },
     'entidad_nombre': {
-        'prompt': '''🏛️ **Información de la Entidad Ejecutora**
+        'prompt': '''🏢 **Información de la Entidad Ejecutora**
 
-Comencemos identificando la entidad que ejecutará el proyecto.
+¿Cuál es el nombre de tu entidad? (Puede ser el desplegable de entidades con la codificación usada para la herramienta de seguimiento de la Estrategia Sectorial de Datos)
 
 Por favor, ingrese el **nombre completo de la entidad pública** que será responsable de la ejecución del proyecto:''',
         'next_step': 'entidad_sector'
     },
     'entidad_sector': {
-        'prompt': '''🏢 **Sector de la Entidad**
+        'prompt': '''🗂️ **Sector Administrativo de la Entidad**
 
-Por favor, especifique el **sector al que pertenece la entidad** (ejemplo: Salud, Educación, Hacienda, Tecnologías de la Información, etc.):''',
+¿A qué sector administrativo pertenece tu entidad?
+
+Por favor, selecciona el sector correspondiente:''',
+        'options': [
+            'Sector Administrativo del Deporte',
+            'Sector Agropecuario, Pesquero y de Desarrollo Rural',
+            'Sector Ambiente y Desarrollo Sostenible',
+            'Sector Ciencia y Tecnología',
+            'Sector Cultura',
+            'Sector de Comercio, Industria y Turismo',
+            'Sector de Igualdad y Equidad',
+            'Sector de la Defensa Nacional',
+            'Sector de las Tecnologías de la Información y las Comunicaciones',
+            'Sector del Interior',
+            'Sector del Trabajo',
+            'Sector Educación Nacional',
+            'Sector Función Pública',
+            'Sector Hacienda y Crédito Público',
+            'Sector Inteligencia Estratégica y Contrainteligencia',
+            'Sector Inclusión Social y Reconciliación',
+            'Sector Información Estadística',
+            'Sector Justicia y del Derecho',
+            'Sector Minas y Energía',
+            'Sector Planeación',
+            'Sector Presidencia de la República',
+            'Sector Relaciones Exteriores',
+            'Sector Salud y de la Protección Social',
+            'Sector Transporte',
+            'Sector Vivienda, Ciudad y Territorio'
+        ],
+        'next_step': 'rol_entidad'
+    },
+    'rol_entidad': {
+        'prompt': '''👤 **Rol dentro de la Entidad**
+
+¿Cuál es tu rol dentro de la entidad?
+
+Por favor, selecciona tu rol:''',
+        'options': [
+            'Responsable de planeación',
+            'Profesional técnico',
+            'Coordinador TIC o de datos',
+            'Otro'
+        ],
         'next_step': 'tipo_proyecto'
     },
     'tipo_proyecto': {
-        'prompt': '''🎯 **Tipo de Proyecto**
+        'prompt': '''🎯 **Tipo de Proyecto de Inversión**
 
-Para estructurar adecuadamente tu proyecto, necesito conocer el enfoque principal.
+¿Qué tipo de proyecto de inversión deseas formular?
 
-¿Tu proyecto se enfoca principalmente en:''',
+(Esta información me permitirá ajustar el flujo a las características del proyecto.)
+
+Por favor, selecciona el tipo de proyecto:''',
         'options': [
-            'Infraestructura de Datos (IDEC) - Gestión, interoperabilidad, calidad de datos',
-            'Inteligencia Artificial - Modelos, algoritmos, automatización',
-            'Proyecto híbrido - Combina elementos de IDEC e IA'
+            '🏗️ Infraestructura física (por ejemplo: centros de datos, redes, servidores)',
+            '📊 Fortalecimiento institucional (por ejemplo: gobernanza, talento humano, procesos)',
+            '🤖 Desarrollo o implementación de soluciones tecnológicas (por ejemplo: sistemas de IA, algoritmos, interoperabilidad)',
+            '🧪 Proyecto piloto o de innovación',
+            '📚 Otro tipo (por favor especifica)'
         ],
         'next_step': 'problema_identificacion'
     },
@@ -468,6 +535,18 @@ def chat():
         if current_step == 'cycle_explanation':
             return handle_cycle_explanation_response(user_message)
         
+        # Manejar la pregunta sobre aplicación de la herramienta
+        if current_step == 'tool_application_question':
+            return handle_tool_application_choice(user_message)
+        
+        # Manejar después de la explicación de la herramienta
+        if current_step == 'tool_application_explanation':
+            return handle_tool_application_explanation_response(user_message)
+        
+        # Manejar el mensaje de confirmación
+        if current_step == 'confirmation_message':
+            return handle_confirmation_message_response(user_message)
+        
         # Manejar opciones después de explicación
         if current_step == 'brief_explanation':
             return handle_explanation_choice_response(user_message)
@@ -479,6 +558,10 @@ def chat():
         # Para pasos con opciones múltiples
         if current_step in conversation_flow and 'options' in conversation_flow[current_step]:
             return handle_multiple_choice(current_step, user_message)
+        
+        # Manejar el rol de la entidad (paso específico)
+        if current_step == 'rol_entidad':
+            return handle_rol_entidad_choice(user_message)
 
         # Almacenar la respuesta actual para pasos de texto libre
         session['responses'] = session.get('responses', {})
@@ -575,19 +658,19 @@ def handle_cycle_choice(user_message):
     user_message_lower = user_message.lower()
     
     if 'sí' in user_message_lower or 'si' in user_message_lower or 'lo conozco' in user_message_lower:
-        # Usuario conoce el ciclo, continuar directamente
-        session['current_step'] = 'entidad_nombre'
+        # Usuario conoce el ciclo, ir a la pregunta sobre aplicación de la herramienta
+        session['current_step'] = 'tool_application_question'
         return jsonify({
-            'response': conversation_flow['entidad_nombre']['prompt'],
-            'current_step': 'entidad_nombre'
+            'response': conversation_flow['tool_application_question']['prompt'],
+            'current_step': 'tool_application_question',
+            'options': conversation_flow['tool_application_question']['options']
         })
     elif 'no' in user_message_lower or 'entenderlo mejor' in user_message_lower:
         # Usuario no conoce el ciclo, mostrar explicación
         session['current_step'] = 'cycle_explanation'
         return jsonify({
             'response': conversation_flow['cycle_explanation']['prompt'],
-            'current_step': 'cycle_explanation',
-            'options': conversation_flow['cycle_explanation']['options']
+            'current_step': 'cycle_explanation'
         })
     else:
         # Respuesta no reconocida, mostrar opciones nuevamente
@@ -599,22 +682,82 @@ def handle_cycle_choice(user_message):
 
 def handle_cycle_explanation_response(user_message):
     """Maneja la respuesta después de la explicación del ciclo"""
+    # Después de la explicación del ciclo, automáticamente ir a la pregunta sobre la herramienta
+    session['current_step'] = 'tool_application_question'
+    return jsonify({
+        'response': conversation_flow['tool_application_question']['prompt'],
+        'current_step': 'tool_application_question',
+        'options': conversation_flow['tool_application_question']['options']
+    })
+
+def handle_tool_application_choice(user_message):
+    """Maneja la respuesta sobre el conocimiento de aplicación de la herramienta"""
     user_message_lower = user_message.lower()
     
-    if 'sí' in user_message_lower or 'si' in user_message_lower or 'comenzar' in user_message_lower:
-        # Usuario quiere comenzar la formulación
-        session['current_step'] = 'entidad_nombre'
+    if 'sí' in user_message_lower or 'si' in user_message_lower or 'etapa previa' in user_message_lower:
+        # Usuario sabe que es para la etapa previa, mostrar mensaje de confirmación
+        session['current_step'] = 'confirmation_message'
         return jsonify({
-            'response': conversation_flow['entidad_nombre']['prompt'],
-            'current_step': 'entidad_nombre'
+            'response': conversation_flow['confirmation_message']['prompt'],
+            'current_step': 'confirmation_message'
+        })
+    elif 'no' in user_message_lower or 'no lo tengo claro' in user_message_lower:
+        # Usuario no lo tiene claro, mostrar explicación
+        session['current_step'] = 'tool_application_explanation'
+        return jsonify({
+            'response': conversation_flow['tool_application_explanation']['prompt'],
+            'current_step': 'tool_application_explanation',
+            'options': conversation_flow['tool_application_explanation']['options']
         })
     else:
         # Respuesta no reconocida, mostrar opciones nuevamente
         return jsonify({
             'response': 'Por favor, selecciona una de las opciones disponibles:',
-            'current_step': 'cycle_explanation',
-            'options': conversation_flow['cycle_explanation']['options']
+            'current_step': 'tool_application_question',
+            'options': conversation_flow['tool_application_question']['options']
         })
+
+def handle_tool_application_explanation_response(user_message):
+    """Maneja la respuesta después de la explicación de la herramienta"""
+    user_message_lower = user_message.lower()
+    
+    if 'sí' in user_message_lower or 'si' in user_message_lower or 'comenzar' in user_message_lower:
+        # Usuario quiere comenzar la formulación, mostrar mensaje de confirmación
+        session['current_step'] = 'confirmation_message'
+        return jsonify({
+            'response': conversation_flow['confirmation_message']['prompt'],
+            'current_step': 'confirmation_message'
+        })
+    else:
+        # Respuesta no reconocida, mostrar opciones nuevamente
+        return jsonify({
+            'response': 'Por favor, selecciona una de las opciones disponibles:',
+            'current_step': 'tool_application_explanation',
+            'options': conversation_flow['tool_application_explanation']['options']
+        })
+
+def handle_confirmation_message_response(user_message):
+    """Maneja la respuesta después del mensaje de confirmación"""
+    # Después del mensaje de confirmación, continuar automáticamente a la formulación
+    session['current_step'] = 'entidad_nombre'
+    return jsonify({
+        'response': conversation_flow['entidad_nombre']['prompt'],
+        'current_step': 'entidad_nombre'
+    })
+
+def handle_rol_entidad_choice(user_message):
+    """Maneja la selección del rol dentro de la entidad"""
+    # Almacenar la respuesta del rol
+    session['responses'] = session.get('responses', {})
+    session['responses']['rol_entidad'] = user_message
+    
+    # Continuar al siguiente paso (tipo de proyecto)
+    session['current_step'] = 'tipo_proyecto'
+    return jsonify({
+        'response': conversation_flow['tipo_proyecto']['prompt'],
+        'current_step': 'tipo_proyecto',
+        'options': conversation_flow['tipo_proyecto']['options']
+    })
 
 def handle_explanation_choice_response(user_message):
     """Maneja la respuesta después de la explicación"""
@@ -696,7 +839,8 @@ def generate_document_with_assistant(responses):
 
         INFORMACIÓN DE LA ENTIDAD:
         - Entidad Ejecutora: {responses.get('entidad_nombre', '')}
-        - Sector: {responses.get('entidad_sector', '')}
+        - Sector Administrativo: {responses.get('entidad_sector', '')}
+        - Rol en la Entidad: {responses.get('rol_entidad', '')}
         - Tipo de Proyecto: {responses.get('tipo_proyecto', '')}
 
         IDENTIFICACIÓN Y PREPARACIÓN DEL PROYECTO:
@@ -817,7 +961,8 @@ def generate_document_with_fallback(responses):
         Por favor, genera un documento de proyecto de inversión basado en la siguiente información:
 
         Entidad: {responses.get('entidad_nombre', '')}
-        Sector: {responses.get('entidad_sector', '')}
+        Sector Administrativo: {responses.get('entidad_sector', '')}
+        Rol en la Entidad: {responses.get('rol_entidad', '')}
         Componentes IDEC: {responses.get('componentes_idec', '')}
         Problemática: {responses.get('problema_descripcion', '')}
         Situación Actual: {responses.get('situacion_actual', '')}

@@ -18,11 +18,27 @@
       "next_step": "handle_cycle_choice"
     },
     "cycle_explanation": {
-      "prompt": "No te preocupes. El ciclo de inversión pública incluye las siguientes etapas:\n\n• Identificación del problema u oportunidad de mejora\n• Formulación de alternativas y estructuración técnica y financiera\n• Evaluación y viabilidad del proyecto\n• Registro en el Banco de Programas y Proyectos (BPIN)\n• Implementación, seguimiento y evaluación\n\n📘 Puedes conocer más en la Guía MGA del DNP\n\n¿Estás listo para comenzar con la formulación de tu proyecto?",
+      "prompt": "No te preocupes. El ciclo de inversión pública incluye las siguientes etapas:\n\n• Identificación del problema u oportunidad de mejora\n• Formulación de alternativas y estructuración técnica y financiera\n• Evaluación y viabilidad del proyecto\n• Registro en el Banco de Programas y Proyectos (BPIN)\n• Implementación, seguimiento y evaluación\n\n📘 Puedes conocer más en la Guía MGA del DNP\n\nAhora continuemos...",
+      "next_step": "tool_application_question"
+    },
+    "tool_application_question": {
+      "prompt": "¿Tienes claro en qué parte del proceso de inversión se aplica esta herramienta?",
+      "options": [
+        "Sí, sé que corresponde a la etapa previa de formulación",
+        "No, no lo tengo claro"
+      ],
+      "next_step": "handle_tool_application_choice"
+    },
+    "tool_application_explanation": {
+      "prompt": "Esta herramienta te será útil especialmente en la etapa previa de formulación del proyecto, donde se definen el problema, los objetivos, las alternativas, los beneficiarios, los costos y los componentes técnicos, alineados con la MGA.\n\n¿Estás listo para comenzar con la formulación de tu proyecto?",
       "options": [
         "Sí, comenzar con la formulación"
       ],
-      "next_step": "start_formulation"
+      "next_step": "confirmation_message"
+    },
+    "confirmation_message": {
+      "prompt": "✅ Gracias. Con esta información ya podemos iniciar el flujo principal para estructurar tu proyecto de inversión en IDEC o IA.\n\nSi responde \"Sí\", pasar a la siguiente sección",
+      "next_step": "entidad_nombre"
     },
     "brief_explanation": {
       "prompt": "📋 **Breve explicación del ciclo de inversión pública:**\n\nEl ciclo de inversión pública consta de las siguientes fases principales:\n\n1. **Pre-inversión**: Identificación, preparación y evaluación del proyecto\n2. **Inversión**: Ejecución del proyecto\n3. **Operación**: Funcionamiento y mantenimiento del proyecto\n\nEn la fase de **Pre-inversión** (donde nos enfocaremos), seguiremos la Metodología General Ajustada (MGA) que incluye:\n\n• **Identificación**: Definir el problema y sus causas\n• **Preparación**: Formular alternativas de solución\n• **Evaluación**: Analizar viabilidad técnica, financiera y social\n\nPara proyectos IDEC/IA, incorporaremos elementos específicos como:\n- Arquitectura de datos\n- Interoperabilidad\n- Seguridad y privacidad\n- Gobernanza de datos\n- Componentes de IA\n\n¿Estás listo para comenzar con la formulación de tu proyecto?",
@@ -41,19 +57,58 @@
       "next_step": "handle_info_choice"
     },
     "entidad_nombre": {
-      "prompt": "🏛️ **Información de la Entidad Ejecutora**\n\nComencemos identificando la entidad que ejecutará el proyecto.\n\nPor favor, ingrese el **nombre completo de la entidad pública** que será responsable de la ejecución del proyecto:",
+      "prompt": "🏢 **Información de la Entidad Ejecutora**\n\n¿Cuál es el nombre de tu entidad? (Puede ser el desplegable de entidades con la codificación usada para la herramienta de seguimiento de la Estrategia Sectorial de Datos)\n\nPor favor, ingrese el **nombre completo de la entidad pública** que será responsable de la ejecución del proyecto:",
       "next_step": "entidad_sector"
     },
     "entidad_sector": {
-      "prompt": "🏢 **Sector de la Entidad**\n\nPor favor, especifique el **sector al que pertenece la entidad** (ejemplo: Salud, Educación, Hacienda, Tecnologías de la Información, etc.):",
+      "prompt": "🗂️ **Sector Administrativo de la Entidad**\n\n¿A qué sector administrativo pertenece tu entidad?\n\nPor favor, selecciona el sector correspondiente:",
+      "options": [
+        "Sector Administrativo del Deporte",
+        "Sector Agropecuario, Pesquero y de Desarrollo Rural",
+        "Sector Ambiente y Desarrollo Sostenible",
+        "Sector Ciencia y Tecnología",
+        "Sector Cultura",
+        "Sector de Comercio, Industria y Turismo",
+        "Sector de Igualdad y Equidad",
+        "Sector de la Defensa Nacional",
+        "Sector de las Tecnologías de la Información y las Comunicaciones",
+        "Sector del Interior",
+        "Sector del Trabajo",
+        "Sector Educación Nacional",
+        "Sector Función Pública",
+        "Sector Hacienda y Crédito Público",
+        "Sector Inteligencia Estratégica y Contrainteligencia",
+        "Sector Inclusión Social y Reconciliación",
+        "Sector Información Estadística",
+        "Sector Justicia y del Derecho",
+        "Sector Minas y Energía",
+        "Sector Planeación",
+        "Sector Presidencia de la República",
+        "Sector Relaciones Exteriores",
+        "Sector Salud y de la Protección Social",
+        "Sector Transporte",
+        "Sector Vivienda, Ciudad y Territorio"
+      ],
+      "next_step": "rol_entidad"
+    },
+    "rol_entidad": {
+      "prompt": "👤 **Rol dentro de la Entidad**\n\n¿Cuál es tu rol dentro de la entidad?\n\nPor favor, selecciona tu rol:",
+      "options": [
+        "Responsable de planeación",
+        "Profesional técnico",
+        "Coordinador TIC o de datos",
+        "Otro"
+      ],
       "next_step": "tipo_proyecto"
     },
     "tipo_proyecto": {
-      "prompt": "🎯 **Tipo de Proyecto**\n\nPara estructurar adecuadamente tu proyecto, necesito conocer el enfoque principal.\n\n¿Tu proyecto se enfoca principalmente en:",
+      "prompt": "🎯 **Tipo de Proyecto de Inversión**\n\n¿Qué tipo de proyecto de inversión deseas formular?\n\n(Esta información me permitirá ajustar el flujo a las características del proyecto.)\n\nPor favor, selecciona el tipo de proyecto:",
       "options": [
-        "Infraestructura de Datos (IDEC) - Gestión, interoperabilidad, calidad de datos",
-        "Inteligencia Artificial - Modelos, algoritmos, automatización",
-        "Proyecto híbrido - Combina elementos de IDEC e IA"
+        "🏗️ Infraestructura física (por ejemplo: centros de datos, redes, servidores)",
+        "📊 Fortalecimiento institucional (por ejemplo: gobernanza, talento humano, procesos)",
+        "🤖 Desarrollo o implementación de soluciones tecnológicas (por ejemplo: sistemas de IA, algoritmos, interoperabilidad)",
+        "🧪 Proyecto piloto o de innovación",
+        "📚 Otro tipo (por favor especifica)"
       ],
       "next_step": "problema_identificacion"
     },
