@@ -1,74 +1,8 @@
 {
-  "conversation_flow": {
-    "entidad_nombre": {
-      "prompt": "Por favor, ingrese el nombre de la entidad p\u00fablica:",
-      "next_step": "entidad_sector"
-    },
-    "entidad_sector": {
-      "prompt": "Por favor, ingrese el sector al que pertenece la entidad:",
-      "next_step": "componentes_idec"
-    },
-    "componentes_idec": {
-      "prompt": "Seleccione los componentes IDEC que desea incluir en su proyecto (puede seleccionar varios):",
-      "options": [
-        "Gobernanza de datos",
-        "Interoperabilidad",
-        "Herramientas t\u00e9cnicas y tecnol\u00f3gicas",
-        "Seguridad y privacidad de datos",
-        "Datos",
-        "Aprovechamiento de datos"
-      ],
-      "min_selections": 1,
-      "next_step": "problema_descripcion"
-    },
-    "problema_descripcion": {
-      "prompt": "Describa la problem\u00e1tica o oportunidad que su proyecto busca atender (m\u00e1ximo 500 caracteres):",
-      "next_step": "situacion_actual"
-    },
-    "situacion_actual": {
-      "prompt": "Describa la situaci\u00f3n actual de la problem\u00e1tica (m\u00e1ximo 500 caracteres):",
-      "next_step": "causas_efectos"
-    },
-    "causas_efectos": {
-      "prompt": "Liste las causas y efectos de la problem\u00e1tica (m\u00e1ximo 500 caracteres):",
-      "next_step": "poblacion_afectada"
-    },
-    "poblacion_afectada": {
-      "prompt": "Describa la poblaci\u00f3n afectada (cantidad y tipo de poblaci\u00f3n, m\u00e1ximo 300 caracteres):",
-      "next_step": "objetivo_general"
-    },
-    "objetivo_general": {
-      "prompt": "Describa el objetivo general del proyecto (m\u00e1ximo 300 caracteres):",
-      "next_step": "objetivos_especificos"
-    },
-    "objetivos_especificos": {
-      "prompt": "Describa los objetivos espec\u00edficos del proyecto (m\u00e1ximo 500 caracteres):",
-      "next_step": "localizacion"
-    },
-    "localizacion": {
-      "prompt": "Describa la localizaci\u00f3n del proyecto (territorial, nacional, departamental, etc., m\u00e1ximo 300 caracteres):",
-      "next_step": "cadena_valor"
-    },
-    "cadena_valor": {
-      "prompt": "Describa la cadena de valor del proyecto (m\u00e1ximo 500 caracteres):",
-      "next_step": "riesgos"
-    },
-    "riesgos": {
-      "prompt": "Liste y describa los riesgos identificados (m\u00e1ximo 500 caracteres):",
-      "next_step": "sostenibilidad"
-    },
-    "sostenibilidad": {
-      "prompt": "Describa la estrategia de sostenibilidad (m\u00e1ximo 500 caracteres):",
-      "next_step": "presupuesto_general"
-    },
-    "presupuesto_general": {
-      "prompt": "Describa el presupuesto general del proyecto (m\u00e1ximo 500 caracteres):",
-      "next_step": "presupuesto_detalle"
-    },
-    "presupuesto_detalle": {
-      "prompt": "Describa el detalle del presupuesto por actividad (m\u00e1ximo 500 caracteres):",
-      "next_step": "end"
-    }
-  },
-  "api_endpoint": "/api/chat"
+  "api_endpoint": "/api/chat",
+  "description": "Asistente para formulación de proyectos MGA/IDEC/IA",
+  "version": "1.0",
+  "author": "Daniel Rambaut",
+  "default_step": "intro_bienvenida",
+  "download_base_url": "/download"
 }
