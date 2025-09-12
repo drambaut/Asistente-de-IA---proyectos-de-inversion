@@ -3,14 +3,14 @@
 from flask import Flask, render_template, request, jsonify, session, send_from_directory, url_for
 from flask_cors import CORS
 import os
-from datetime import datetime
+import traceback
 import logging
 from dotenv import load_dotenv
 from docx import Document
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from openai import AzureOpenAI
 import json
 import time
+import httpx
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -27,24 +27,83 @@ DOCUMENTS_DIR = os.path.join(app.static_folder, 'documents')
 os.makedirs(DOCUMENTS_DIR, exist_ok=True)
 
 client = AzureOpenAI(
-    api_key=os.getenv('OPENAI_API_KEY'),
-    api_version=os.getenv('OPENAI_API_VERSION', '2024-02-15-preview'),
-    azure_endpoint=os.getenv('OPENAI_API_BASE')
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-05-01-preview"),
+    http_client=httpx.Client(verify=False)
 )
-ASSISTANT_ID = os.getenv('ASSISTANT_ID')
 
-if not os.getenv('OPENAI_API_KEY'):
-    raise ValueError("OPENAI_API_KEY no está configurada")
-if not os.getenv('OPENAI_API_BASE'):
-    raise ValueError("OPENAI_API_BASE no está configurada")
-if not ASSISTANT_ID:
-    raise ValueError("ASSISTANT_ID no está configurado")
+# ==========================================================
+# FUNCION PARA GENERAR DOCUMENTO WORD
+# ==========================================================
+def generate_project_document(responses: dict, filename: str = None) -> str:
+    if not filename:
+        filename = f"proyecto_inversion_{int(time.time())}.docx"
 
+    filepath = os.path.join(DOCUMENTS_DIR, filename)
+
+    prompt = (
+        "Eres un experto en formulación de proyectos bajo la Metodología General Ajustada (MGA) "
+        "del DNP de Colombia. Con la siguiente información recolectada del usuario, organiza un "
+        "documento estructurado como un proyecto de inversión en Infraestructura de Datos o IA.\n\n"
+        "👉 El documento debe estar en español, redactado en tono técnico y formal, con estilo claro.\n"
+        "👉 Usa títulos y subtítulos en el formato Markdown (#, ##, ###).\n"
+        "👉 Secciones mínimas:\n"
+        "- Introducción\n"
+        "- Problema central\n"
+        "- Causas y efectos (directos e indirectos)\n"
+        "- Población afectada\n"
+        "- Población objetivo\n"
+        "- Localización\n"
+        "- Objetivo central\n"
+        "- Medios y fines (directos e indirectos)\n"
+        "- Cadena de valor\n"
+        "- Conclusión\n\n"
+        f"Información recolectada: {json.dumps(responses, indent=2, ensure_ascii=False)}\n\n"
+        "Redacta el documento con títulos y subtítulos claros, listados cuando corresponda y párrafos bien organizados."
+    )
+
+    completion = client.chat.completions.create(
+        model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+        messages=[
+            {"role": "system", "content": "Eres un asistente experto en proyectos MGA/IDEC/IA."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=2500,
+        temperature=0.5
+    )
+
+    text = completion.choices[0].message.content.strip()
+
+    doc = Document()
+    doc.add_heading("Proyecto de Inversión en IDEC/IA", level=0)
+
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+
+        if line.startswith("### "):
+            doc.add_heading(line.replace("### ", ""), level=3)
+        elif line.startswith("## "):
+            doc.add_heading(line.replace("## ", ""), level=2)
+        elif line.startswith("# "):
+            doc.add_heading(line.replace("# ", ""), level=1)
+        else:
+            doc.add_paragraph(line)
+
+    doc.save(filepath)
+    return filepath
+
+# ==========================================================
+# RUTAS BASICAS
+# ==========================================================
 @app.route('/')
 def index():
     session.clear()
     session['current_step'] = 'intro_bienvenida'
     session['responses'] = {}
+    session['mode'] = 'flow'  # default: flujo normal
     return render_template('index.html')
 
 @app.route('/config.json')
@@ -63,10 +122,56 @@ def download_file(filename):
         logger.error(f"Error descargando archivo: {str(e)}")
         return "Error al descargar el archivo", 404
 
-# --- FLUJO DE CONVERSACIÓN COMPLETO ---
+@app.route('/reset', methods=['POST'])
+def reset_conversation():
+    session.clear()
+    session['current_step'] = 'intro_bienvenida'
+    session['responses'] = {}
+    session['mode'] = 'flow'
+    return jsonify({"status": "ok", "message": "Conversación reiniciada"})
+
+# ==========================================================
+# CHAT LIBRE (IA)
+# ==========================================================
+@app.route('/api/chat_alt', methods=['POST'])
+def chat_alt():
+    try:
+        data = request.get_json(silent=True) or {}
+        user_message = data.get("message", "").strip()
+
+        session['mode'] = "alt"
+
+        if user_message.lower() == "finalizar":
+            session['mode'] = "flow"
+            return jsonify({
+                "response": "✅ Has finalizado el chat libre. Volvemos al flujo normal.",
+                "options": ["Continuar flujo"]
+            })
+
+        completion = client.chat.completions.create(
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+            messages=[
+                {"role": "system", "content": "Eres un asistente experto en proyectos TIC del gobierno colombiano."},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=500,
+            temperature=0.7
+        )
+
+        assistant_message = completion.choices[0].message.content.strip()
+
+        return jsonify({"response": assistant_message})
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# ==========================================================
+# FLUJO PRINCIPAL
+# ==========================================================
 conversation_flow = {
     "intro_bienvenida": {
-        "prompt": "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\nTe acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación, incorporando los enfoques técnicos y estratégicos de las guías de Infraestructura de datos del Estado Colombiano (IDEC) e Inteligencia artificial.\n\n🧰 A lo largo del proceso, te haré preguntas que nos permitirán construir los elementos clave del proyecto: desde la definición del problema, identificación de causas y objetivos (árboles de problema), hasta la justificación, la población beneficiaria, y el desarrollo de objetivos, cadena de valor, indicadores, presupuesto, cronograma y demás componentes técnicos.\n\n❓ ¿Tienes dudas generales antes de empezar?",
+        "prompt": "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\nTe acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación.\n\n🧰 Te haré preguntas clave para estructurar el proyecto.\n\n❓ ¿Tienes dudas generales antes de empezar?",
         "options": [
             "Sí, entiendo el proceso y deseo continuar",
             "No del todo, me gustaría una breve explicación",
@@ -80,20 +185,12 @@ conversation_flow = {
         "next_step": "pregunta_2_herramienta"
     },
     "explicacion_ciclo": {
-        "prompt": "📘 No te preocupes. El ciclo de inversión pública incluye las siguientes etapas:\n\n• Identificación del problema u oportunidad de mejora\n• Formulación de alternativas y estructuración técnica y financiera\n• Evaluación y viabilidad del proyecto\n• Registro en el Banco de Programas y Proyectos (BPIN)\n• Implementación, seguimiento y evaluación\n\nPuedes conocer más en la Guía MGA del DNP: https://www.dnp.gov.co/planes-nacionales/metodologia-general-ajustada",
+        "prompt": "📘 El ciclo de inversión pública incluye:\n• Identificación del problema\n• Formulación\n• Evaluación\n• Registro en BPIN\n• Implementación y seguimiento",
         "next_step": "pregunta_2_herramienta"
     },
     "pregunta_2_herramienta": {
-        "prompt": "¿Tienes claro en qué parte del proceso de inversión se aplica esta herramienta?",
-        "options": ["Sí, sé que corresponde a la etapa previa de formulación", "No, no lo tengo claro"],
-        "next_step": "confirmacion_inicio"
-    },
-    "explicacion_herramienta": {
-        "prompt": "Esta herramienta te será útil especialmente en la etapa previa de formulación del proyecto, donde se definen el problema, los objetivos, las alternativas, los beneficiarios, los costos y los componentes técnicos, alineados con la MGA.",
-        "next_step": "confirmacion_inicio"
-    },
-    "confirmacion_inicio": {
-        "prompt": "✅ Gracias. Con esta información ya podemos iniciar el flujo principal para estructurar tu proyecto de inversión en IDEC o IA.",
+        "prompt": "¿Tienes claro en qué parte del proceso se aplica esta herramienta?",
+        "options": ["Sí, etapa de formulación", "No, no lo tengo claro"],
         "next_step": "pregunta_3_entidad"
     },
     "pregunta_3_entidad": {
@@ -102,96 +199,39 @@ conversation_flow = {
     },
     "pregunta_4_sector": {
         "prompt": "🗂️ ¿A qué sector administrativo pertenece tu entidad?",
-        "options": [
-            "Sector Administrativo del Deporte",
-            "Sector Agropecuario, Pesquero y de Desarrollo Rural",
-            "Sector Ambiente y Desarrollo Sostenible",
-            "Sector Ciencia y Tecnología",
-            "Sector Cultura",
-            "Sector de Comercio, Industria y Turismo",
-            "Sector de Igualdad y Equidad",
-            "Sector de la Defensa Nacional",
-            "Sector de las Tecnologías de la Información y las Comunicaciones",
-            "Sector del Interior",
-            "Sector del Trabajo",
-            "Sector Educación Nacional",
-            "Sector Función Pública",
-            "Sector Hacienda y Crédito Público",
-            "Sector Inteligencia Estratégica y Contrainteligencia",
-            "Sector Inclusión Social y Reconciliación",
-            "Sector Información Estadística",
-            "Sector Justicia y del Derecho",
-            "Sector Minas y Energía",
-            "Sector Planeación",
-            "Sector Presidencia de la República",
-            "Sector Relaciones Exteriores",
-            "Sector Salud y de la Protección Social",
-            "Sector Transporte",
-            "Sector Vivienda, Ciudad y Territorio"
-        ],
+        "options": ["Sector Educación", "Sector Salud", "Sector TIC", "Otro"],
         "next_step": "pregunta_5_rol"
     },
     "pregunta_5_rol": {
         "prompt": "👤 ¿Cuál es tu rol dentro de la entidad?",
-        "options": ["Responsable de planeación", "Profesional técnico", "Coordinador TIC o de datos", "Otro"],
+        "options": ["Responsable de planeación", "Profesional técnico", "Coordinador TIC", "Otro"],
         "next_step": "pregunta_6_tipo_proyecto"
     },
     "pregunta_6_tipo_proyecto": {
-        "prompt": "🎯 ¿Qué tipo de proyecto de inversión deseas formular?",
-        "options": [
-            "🏗️ Infraestructura física (por ejemplo: centros de datos, redes, servidores)",
-            "📊 Fortalecimiento institucional (por ejemplo: gobernanza, talento humano, procesos)",
-            "🤖 Desarrollo o implementación de soluciones tecnológicas",
-            "🧪 Proyecto piloto o de innovación",
-            "📚 Otro tipo (por favor especifica)"
-        ],
-        "next_step": "pregunta_6_orientacion"
-    },
-    "pregunta_6_orientacion": {
-        "prompt": "🚀 ¿Deseas construir un proyecto de inversión asociando componentes TIC en temas de IDEC o IA?",
-        "options": ["Si en IDEC", "Si en IA", "No - Cierre de la conversación"],
-        "next_step": "componentes_idec"
-    },
-    "componentes_idec": {
-        "prompt": "📦 La siguiente es la lista de componentes IDEC. Selecciona los que deseas incluir (puedes escribirlos separados por coma):\n\n• Gobernanza de datos\n• Interoperabilidad\n• Herramientas técnicas y tecnológicas\n• Seguridad y privacidad de datos\n• Datos\n• Aprovechamiento de datos",
-        "next_step": "problema_central"
-    },
-    "componentes_ia": {
-        "prompt": "🤖 La siguiente es la lista de componentes de IA. Selecciona los que deseas incluir (puedes escribirlos separados por coma):\n\n• Componente 1: Chipset y Hardware informático\n• Componente 2: Productos y Servicios integrados de IA\n• Componente 3: Entrenamiento y Desarrollo de Modelos de IA\n• Componente 4: Ejecución y Despliegue de Modelos de IA\n• Componente 5: Aplicaciones de IA\n• Componente 6: Servicios de IA\n• Componente 7: Gobernanza de IA",
+        "prompt": "🎯 ¿Qué tipo de proyecto deseas formular?",
+        "options": ["Infraestructura", "Fortalecimiento institucional", "Soluciones tecnológicas", "Piloto de innovación"],
         "next_step": "problema_central"
     },
     "problema_central": {
-        "prompt": "🎯 ¿Cuál es la problemática o la oportunidad que tu proyecto de inversión busca atender o resolver?\n\n(Escribe tu respuesta. Si no tienes claridad escribe: 'No tengo claro')",
-        "next_step": "causas_efectos_directos"
+        "prompt": "🎯 ¿Cuál es la problemática principal que tu proyecto busca atender?",
+        "next_step": "objetivo_central"
     },
-    "ayuda_problema_central": {
-        "prompt": "🧩 En la identificación del problema es común encontrar múltiples situaciones negativas que afectan a una comunidad. Para reducir la complejidad del análisis, se debe delimitar claramente el ámbito del problema. Si las ideas iniciales son vagas o generales, se recomienda listar las condiciones negativas más relevantes según la comunidad. Luego, se deben priorizar aquellas que estén asociadas con el problema principal. Finalmente, se organiza el listado en secuencias, identificando relaciones de dependencia entre las situaciones negativas.\n\nPor favor, vuelve a formular la problemática principal.",
-        "next_step": "problema_central"
+    "objetivo_central": {
+        "prompt": "📌 ¿Cuál es el objetivo central del proyecto?",
+        "next_step": "cadena_valor"
     },
-    "causas_efectos_directos": {
-        "prompt": "📌 ¿Cuáles son las causas y efectos directos de la problemática u oportunidad (mínimo 2)?\n\n(Escribe tu respuesta. Si necesitas ayuda escribe: 'Necesito ayuda')",
-        "next_step": "causas_efectos_indirectos"
-    },
-    "ayuda_causas_efectos_directos": {
-        "prompt": "🔎 Las causas directas son las acciones o hechos concretos que dan origen al problema central (primer nivel, debajo del problema). Los efectos directos son consecuencias que genera la situación negativa identificada como problema central (primer nivel, arriba del problema). No existe relación directa causa→efecto; ambas se relacionan con el problema central.\n\nAhora, por favor lista al menos 2 causas directas y 2 efectos directos.",
-        "next_step": "causas_efectos_directos"
-    },
-    "causas_efectos_indirectos": {
-        "prompt": "🌐 ¿Cuáles son las causas y efectos indirectos de la problemática u oportunidad (mínimo 1 por cada causa/efecto directo)?\n\n(Escribe tu respuesta. Si necesitas ayuda escribe: 'Necesito ayuda')",
-        "next_step": None
-    },
-    "ayuda_causas_efectos_indirectos": {
-        "prompt": "🧠 Las causas indirectas dan origen a las causas directas y se encuentran a partir del segundo nivel (debajo de las causas directas). Los efectos indirectos son situaciones negativas generadas por los efectos directos (niveles superiores a los efectos directos).\n\nAhora, por favor lista al menos 1 causa indirecta por cada causa directa y 1 efecto indirecto por cada efecto directo.",
-        "next_step": "causas_efectos_indirectos"
+    "cadena_valor": {
+        "prompt": "🔗 ¿Cómo se constituye tu cadena de valor?",
+        "next_step": "finalizado"
     }
 }
 
-
-
-# --- AJUSTES EN /api/chat PARA MANEJAR LA RAMA IDEC/IA Y LOS NUEVOS PASOS ---
-
 @app.route('/api/chat', methods=['POST'])
 def chat():
+    # Si estamos en modo alternativo, delegamos a chat_alt
+    if session.get("mode") == "alt":
+        return chat_alt()
+
     data = request.get_json()
     user_message = data.get('message', '').strip()
     user_lower = user_message.lower()
@@ -199,245 +239,42 @@ def chat():
     current_step = session.get('current_step', 'intro_bienvenida')
     responses = session.get('responses', {})
 
-    # iniciar flujo con la intro
-    if current_step == 'intro_bienvenida' and user_lower in ['iniciar', 'start', '']:
-        intro_data = conversation_flow['intro_bienvenida']
+    # inicio
+    if current_step == 'intro_bienvenida' and user_lower in ['iniciar', 'start']:
+        intro = conversation_flow['intro_bienvenida']
         session['current_step'] = 'intro_bienvenida'
         return jsonify({
-            "response": intro_data['prompt'],
+            "response": intro['prompt'],
             "current_step": "intro_bienvenida",
-            "options": intro_data['options']
+            "options": intro['options']
         })
 
     # guardar respuesta
     responses[current_step] = user_message
     session['responses'] = responses
 
-    # INTRO: decidir siguiente
-    if current_step == "intro_bienvenida":
-        if "entiendo" in user_lower or "continuar" in user_lower:
-            next_step = "pregunta_1_ciclo"
-        elif "breve" in user_lower or "explicación" in user_lower or "explicacion" in user_lower:
-            next_step = "explicacion_ciclo"
-        elif "pnid" in user_lower or "conpes" in user_lower or "dudas" in user_lower:
-            session['current_step'] = "pregunta_1_ciclo"
-            return jsonify({
-                "response": "📚 PNID y CONPES 4144 establecen lineamientos clave para proyectos IDEC/IA.\n\n¿Conoces el ciclo de inversión pública?",
-                "current_step": "pregunta_1_ciclo",
-                "options": conversation_flow["pregunta_1_ciclo"]["options"]
-            })
-        else:
-            return jsonify({
-                "response": "Por favor, selecciona una de las opciones disponibles:",
-                "current_step": "intro_bienvenida",
-                "options": conversation_flow["intro_bienvenida"]["options"]
-            })
-        session['current_step'] = next_step
-        payload = {
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        }
-        if "options" in conversation_flow[next_step]:
-            payload["options"] = conversation_flow[next_step]["options"]
-        return jsonify(payload)
+    # avanzar flujo
+    next_step = conversation_flow.get(current_step, {}).get("next_step")
 
-    # P1: ciclo
-    if current_step == "pregunta_1_ciclo":
-        if user_lower in ["no", "no lo conozco", "no, me gustaría entenderlo mejor", "no, me gustaria entenderlo mejor"]:
-            next_step = "explicacion_ciclo"
-        elif user_lower in ["sí", "si", "sí lo conozco", "si lo conozco", "sí, lo conozco", "si, lo conozco", "lo conozco"]:
-            next_step = conversation_flow[current_step]["next_step"]
-        else:
-            return jsonify({
-                "response": "Por favor selecciona una de las opciones válidas:",
-                "current_step": current_step,
-                "options": conversation_flow[current_step]["options"]
-            })
-        session['current_step'] = next_step
-        payload = {
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        }
-        if "options" in conversation_flow[next_step]:
-            payload["options"] = conversation_flow[next_step]["options"]
-        return jsonify(payload)
+    if not next_step:
+        session['current_step'] = "finalizado"
+        filepath = generate_project_document(responses)
+        filename = os.path.basename(filepath)
+        download_url = url_for('download_file', filename=filename)
 
-    # Explicación ciclo -> P2
-    if current_step == "explicacion_ciclo":
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        payload = {
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        }
-        if "options" in conversation_flow[next_step]:
-            payload["options"] = conversation_flow[next_step]["options"]
-        return jsonify(payload)
-
-    # P2: herramienta
-    if current_step == "pregunta_2_herramienta":
-        if "no" in user_lower:
-            next_step = "explicacion_herramienta"
-        else:
-            next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        payload = {
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        }
-        if "options" in conversation_flow[next_step]:
-            payload["options"] = conversation_flow[next_step]["options"]
-        return jsonify(payload)
-
-    # Explicación herramienta -> confirmación
-    if current_step == "explicacion_herramienta":
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
         return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
+            "response": f"✅ Flujo completado. Documento generado.\n\n📄 <a href='{download_url}' target='_blank'>Descargar documento</a>",
+            "current_step": "finalizado"
         })
 
-    # Confirmación -> entidad
-    if current_step == "confirmacion_inicio":
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Sector/rol/tipo -> orientación
-    if current_step in ["pregunta_3_entidad", "pregunta_4_sector", "pregunta_5_rol", "pregunta_6_tipo_proyecto"]:
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        payload = {
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        }
-        if "options" in conversation_flow[next_step]:
-            payload["options"] = conversation_flow[next_step]["options"]
-        return jsonify(payload)
-
-    # Orientación IDEC/IA
-    if current_step == "pregunta_6_orientacion":
-        if "idec" in user_lower:
-            next_step = "componentes_idec"
-        elif user_lower == "si en ia" or " ia" in user_lower or user_lower.startswith("si en ia"):
-            next_step = "componentes_ia"
-        elif user_lower.startswith("no"):
-            session['current_step'] = "finalizado"
-            return jsonify({
-                "response": "Entendido. Conversación finalizada. ¡Gracias!",
-                "current_step": "finalizado"
-            })
-        else:
-            return jsonify({
-                "response": "Por favor selecciona una de las opciones válidas:",
-                "current_step": "pregunta_6_orientacion",
-                "options": conversation_flow["pregunta_6_orientacion"]["options"]
-            })
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Componentes IDEC/IA -> problema central
-    if current_step in ["componentes_idec", "componentes_ia"]:
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Problema central (texto libre + ayuda)
-    if current_step == "problema_central":
-        if "no tengo claro" in user_lower or "no tengo claridad" in user_lower:
-            next_step = "ayuda_problema_central"
-        else:
-            next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Ayuda problema central -> vuelve a problema_central
-    if current_step == "ayuda_problema_central":
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Causas/Efectos directos (texto + ayuda)
-    if current_step == "causas_efectos_directos":
-        if "necesito ayuda" in user_lower:
-            next_step = "ayuda_causas_efectos_directos"
-        else:
-            next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Ayuda directos -> vuelve a directos
-    if current_step == "ayuda_causas_efectos_directos":
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Causas/Efectos indirectos (texto + ayuda)
-    if current_step == "causas_efectos_indirectos":
-        if "necesito ayuda" in user_lower:
-            next_step = "ayuda_causas_efectos_indirectos"
-            session['current_step'] = next_step
-            return jsonify({
-                "response": conversation_flow[next_step]["prompt"],
-                "current_step": next_step
-            })
-        else:
-            # Fin (no hay next_step definido aquí)
-            session['current_step'] = "finalizado"
-            return jsonify({
-                "response": "¡Gracias! Se han registrado causas y efectos indirectos. Puedes continuar con la siguiente sección del proyecto.",
-                "current_step": "finalizado"
-            })
-
-    # Ayuda indirectos -> vuelve a indirectos
-    if current_step == "ayuda_causas_efectos_indirectos":
-        next_step = conversation_flow[current_step]["next_step"]
-        session['current_step'] = next_step
-        return jsonify({
-            "response": conversation_flow[next_step]["prompt"],
-            "current_step": next_step
-        })
-
-    # Fallback genérico
-    if current_step in conversation_flow:
-        next_step = conversation_flow[current_step].get("next_step")
-        if next_step:
-            session['current_step'] = next_step
-            payload = {
-                "response": conversation_flow[next_step]["prompt"],
-                "current_step": next_step
-            }
-            if "options" in conversation_flow[next_step]:
-                payload["options"] = conversation_flow[next_step]["options"]
-            return jsonify(payload)
-
-    session['current_step'] = "finalizado"
-    return jsonify({
-        "response": "Flujo completado.",
-        "current_step": "finalizado"
-    })
+    session['current_step'] = next_step
+    payload = {
+        "response": conversation_flow[next_step]["prompt"],
+        "current_step": next_step
+    }
+    if "options" in conversation_flow[next_step]:
+        payload["options"] = conversation_flow[next_step]["options"]
+    return jsonify(payload)
 
 
 if __name__ == '__main__':

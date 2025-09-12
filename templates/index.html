@@ -1,359 +1,120 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente de IA para la formulacion proyectos TIC</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .chat-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .chat-header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-        .chat-messages {
-            height: 500px;
-            overflow-y: auto;
-            padding: 1.5rem;
-            background: #f8f9fa;
-        }
-        .message {
-            margin-bottom: 1rem;
-            padding: 1rem;
-            border-radius: 10px;
-            max-width: 80%;
-        }
-        .user-message {
-            background: #e3f2fd;
-            margin-left: auto;
-            border-bottom-right-radius: 0;
-        }
-        .bot-message {
-            background: white;
-            margin-right: auto;
-            border-bottom-left-radius: 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .chat-input {
-            padding: 1.5rem;
-            background: white;
-            border-top: 1px solid #eee;
-        }
-        .form-control {
-            border-radius: 25px;
-            padding: 0.75rem 1.5rem;
-            border: 2px solid #e9ecef;
-        }
-        .form-control:focus {
-            box-shadow: none;
-            border-color: #3498db;
-        }
-        .btn-send {
-            border-radius: 25px;
-            padding: 0.75rem 2rem;
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            border: none;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .btn-send:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 1rem;
-        }
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .download-container {
-            display: none;
-            text-align: center;
-            margin: 1rem;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-            border-radius: 10px;
-            border: 1px solid #81c784;
-        }
-        .download-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: linear-gradient(135deg, #2e7d32, #43a047);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-        .download-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            color: white;
-        }
-        .download-button svg {
-            width: 20px;
-            height: 20px;
-        }
-        .success-message {
-            color: #2e7d32;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        .success-icon {
-            color: #43a047;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        /* Estilos para botones de selección múltiple */
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        .option-button {
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 0.75rem 1rem;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-        
-        .option-button:hover {
-            border-color: #3498db;
-            background: #f8f9fa;
-        }
-        
-        .option-button.selected {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border-color: #3498db;
-        }
-        
-        .option-button.selected:hover {
-            background: linear-gradient(135deg, #2980b9, #1f5f8b);
-        }
-        
-        .submit-selections {
-            background: linear-gradient(135deg, #2e7d32, #43a047);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 0.75rem 2rem;
-            margin-top: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .submit-selections:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .submit-selections:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente de IA - Proyectos TIC</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f8f9fa; font-family: 'Segoe UI', sans-serif; }
+    .chat-container { max-width:800px; margin:2rem auto; background:white; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.1); }
+    .chat-header { background:linear-gradient(135deg,#2c3e50,#3498db); color:white; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
+    .chat-messages { height:500px; overflow-y:auto; padding:1rem; background:#f8f9fa; }
+    .message { margin-bottom:1rem; padding:1rem; border-radius:10px; max-width:80%; }
+    .user-message { background:#e3f2fd; margin-left:auto; }
+    .bot-message { background:white; margin-right:auto; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+    .chat-input { padding:1rem; background:white; border-top:1px solid #eee; }
+    .btn-send { border-radius:25px; padding:0.75rem 2rem; background:linear-gradient(135deg,#2c3e50,#3498db); border:none; color:white; }
+    .option-button { display:block; width:100%; margin:.3rem 0; padding:.5rem; border:1px solid #ddd; border-radius:8px; text-align:left; }
+    .option-button:hover { background:#f0f0f0; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h1 class="mb-0">Asistente de IA</h1>
-                <p class="mb-0">para la formulacion proyectos TIC</p>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-                <!-- Los mensajes se agregarán aquí -->
-            </div>
-            <div class="loading" id="loading">
-                <div class="loading-spinner"></div>
-            </div>
-            <div class="download-container" id="downloadContainer">
-                <div class="success-icon">✓</div>
-                <h3 class="success-message">¡Documento Generado!</h3>
-                <p>Su documento está listo para descargar</p>
-                <a href="#" class="download-button" id="downloadButton">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    Descargar Documento
-                </a>
-            </div>
-            <div class="chat-input">
-                <form id="chatForm" class="d-flex gap-2">
-                    <input type="text" class="form-control" id="userInput" placeholder="Escriba su mensaje aquí..." autocomplete="off">
-                    <button type="submit" class="btn btn-send">Enviar</button>
-                </form>
-            </div>
+  <div class="container">
+    <div class="chat-container">
+      <div class="chat-header">
+        <div>
+          <h5 class="mb-0">Asistente de IA</h5>
+          <small>Proyectos TIC</small>
         </div>
+        <div>
+          <button id="altChatBtn" class="btn btn-warning btn-sm">💬 Chat Libre</button>
+          <button id="resetBtn" class="btn btn-danger btn-sm">🔄 Reiniciar</button>
+        </div>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input">
+        <form id="chatForm" class="d-flex gap-2">
+          <input type="text" id="userInput" class="form-control" placeholder="Escribe tu mensaje..." autocomplete="off">
+          <button type="submit" class="btn btn-send">Enviar</button>
+        </form>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Variables globales
-        let config = null;
-        let currentStep = 'initial';
-        let selectedOptions = [];
-        let isWaitingForSelections = false;
+  <script>
+    let mode = "flow"; // por defecto flujo
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
 
-        // Cargar la configuración
-        fetch('/config.json')
-            .then(response => response.json())
-            .then(data => {
-                config = data;
-                // Iniciar conversación automáticamente con el mensaje de bienvenida completo
-                sendMessage('iniciar');
-            })
-            .catch(error => {
-                console.error('Error cargando la configuración:', error);
-                addMessage('Error cargando la configuración. Por favor, recargue la página.', 'bot');
-            });
+    function addMessage(msg, sender) {
+      const div = document.createElement('div');
+      div.className = `message ${sender}-message`;
+      div.innerHTML = msg.replace(/\n/g,"<br>");
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-        const chatMessages = document.getElementById('chatMessages');
-        const chatForm = document.getElementById('chatForm');
-        const userInput = document.getElementById('userInput');
-        const loading = document.getElementById('loading');
-        const downloadContainer = document.getElementById('downloadContainer');
-        const downloadButton = document.getElementById('downloadButton');
-
-        function addMessage(message, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            messageDiv.innerHTML = message.replace(/\n/g, "<br>");
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function addOptionsMessage(message, options) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot-message';
-            
-            let html = `<div>${message}</div>`;
-            html += '<div class="options-container">';
-            
-            options.forEach((option, index) => {
-                html += `<button class="option-button" data-option="${option}">${option}</button>`;
-            });
-            
-            html += '</div>';
-            
-            messageDiv.innerHTML = html;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Agregar event listeners a los botones para selección única
-            const optionButtons = messageDiv.querySelectorAll('.option-button');
-            
-            optionButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const option = button.dataset.option;
-                    
-                    // Mostrar la opción seleccionada como mensaje del usuario
-                    addMessage(option, 'user');
-                    
-                    // Enviar la selección al servidor
-                    sendMessage(option);
-                });
-            });
-        }
-
-        function showLoading() {
-            loading.style.display = 'block';
-        }
-
-        function hideLoading() {
-            loading.style.display = 'none';
-        }
-
-        function showDownloadButton(downloadUrl) {
-            downloadContainer.style.display = 'block';
-            downloadButton.href = downloadUrl;
-        }
-
-        async function sendMessage(message) {
-            showLoading();
-            selectedOptions = []; // Reset selections
-
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ message: message })
-                });
-
-                const data = await response.json();
-                hideLoading();
-
-                if (data.response) {
-                    // Verificar si hay opciones disponibles
-                    if (data.options && data.options.length > 0) {
-                        addOptionsMessage(data.response, data.options);
-                    } else {
-                        addMessage(data.response, 'bot');
-                    }
-                }
-
-                if (data.download_url) {
-                    showDownloadButton(data.download_url);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                hideLoading();
-                addMessage('Lo siento, ha ocurrido un error. Por favor, intente nuevamente.', 'bot');
-            }
-        }
-
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = userInput.value.trim();
-            if (!message) return;
-
-            // Mostrar mensaje del usuario
-            addMessage(message, 'user');
-            userInput.value = '';
-            
-            await sendMessage(message);
+    function addOptionsMessage(msg, options) {
+      const div = document.createElement('div');
+      div.className = 'message bot-message';
+      let html = `<div>${msg}</div>`;
+      options.forEach(opt => {
+        html += `<button class="option-button" data-option="${opt}">${opt}</button>`;
+      });
+      div.innerHTML = html;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      div.querySelectorAll('.option-button').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          addMessage(btn.dataset.option,'user');
+          sendMessage(btn.dataset.option);
         });
-    </script>
+      });
+    }
+
+    async function sendMessage(msg) {
+      try {
+        let endpoint = (mode === "alt") ? "/api/chat_alt" : "/api/chat";
+        const res = await fetch(endpoint, {
+          method:"POST",
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({message:msg})
+        });
+        const data = await res.json();
+        if(data.response){
+          if(data.options){ addOptionsMessage(data.response,data.options); }
+          else{ addMessage(data.response,'bot'); }
+        }
+        if(msg.toLowerCase()==="finalizar" && mode==="alt"){ mode="flow"; }
+      } catch(err){ addMessage("❌ Error en el servidor","bot"); }
+    }
+
+    chatForm.addEventListener("submit",(e)=>{
+      e.preventDefault();
+      const msg=userInput.value.trim();
+      if(!msg) return;
+      addMessage(msg,'user');
+      userInput.value="";
+      sendMessage(msg);
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", async ()=>{
+      await fetch("/reset",{method:"POST"});
+      chatMessages.innerHTML="";
+      addMessage("🔄 Conversación reiniciada.","bot");
+      mode="flow";
+      sendMessage("iniciar");
+    });
+
+    document.getElementById("altChatBtn").addEventListener("click", ()=>{
+      mode="alt";
+      addMessage("🤖 Has activado el chat libre. Pregunta lo que quieras.<br>Escribe <b>Finalizar</b> para volver al flujo.","bot");
+    });
+
+    // iniciar conversación automáticamente
+    sendMessage("iniciar");
+  </script>
 </body>
-</html> 
+</html>
