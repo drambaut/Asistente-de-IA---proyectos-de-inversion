@@ -62,84 +62,20 @@ http://localhost:5000
 
 ## Despliegue en Producción
 
-### Opción 1: Despliegue Simple (Heroku, Railway, Render)
-
-1. **Heroku**:
-   ```bash
-   # Instalar Heroku CLI
-   heroku create tu-app-name
-   heroku config:set OPENAI_API_KEY=tu_api_key
-   heroku config:set SECRET_KEY=tu_clave_secreta
-   git push heroku main
-   ```
-
-2. **Railway**:
-   - Conectar tu repositorio de GitHub
-   - Configurar variables de entorno en el dashboard
-   - El despliegue será automático
-
-3. **Render**:
+**Render**:
    - Crear nuevo Web Service
    - Conectar repositorio de GitHub
    - Configurar variables de entorno
    - Build Command: `pip install -r requirements.txt`
-   - Start Command: `gunicorn wsgi:app`
-
-### Opción 2: Docker
-
-1. **Construir y ejecutar con Docker**:
-   ```bash
-   # Construir la imagen
-   docker build -t asistente-ia .
-   
-   # Ejecutar el contenedor
-   docker run -p 8000:8000 -e OPENAI_API_KEY=tu_api_key asistente-ia
-   ```
-
-2. **Usar Docker Compose**:
-   ```bash
-   # Crear archivo .env con las variables
-   echo "OPENAI_API_KEY=tu_api_key" > .env
-   echo "SECRET_KEY=tu_clave_secreta" >> .env
-   
-   # Ejecutar con docker-compose
-   docker-compose up -d
-   ```
-
-### Opción 3: VPS con Docker
-
-1. **En tu servidor**:
-   ```bash
-   # Clonar el repositorio
-   git clone https://github.com/tu-usuario/asistente-proyectos-inversion.git
-   cd asistente-proyectos-inversion
-   
-   # Configurar variables de entorno
-   nano .env
-   
-   # Ejecutar con docker-compose
-   docker-compose up -d
-   ```
-
-2. **Configurar Nginx** (opcional):
-   ```nginx
-   server {
-       listen 80;
-       server_name tu-dominio.com;
-       
-       location / {
-           proxy_pass http://localhost:8000;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-       }
-   }
-   ```
+   - Start Command: `gunicorn app:app`
 
 ## Variables de Entorno
 
-- `OPENAI_API_KEY`: Tu clave de API de Azure OpenAI (requerida)
-- `OPENAI_API_BASE`: URL base de tu instancia de Azure OpenAI (requerida)
-- `SECRET_KEY`: Clave secreta para las sesiones de Flask (recomendada para producción)
+- `AZURE_OPENAI_ENDPOINT`: Es la **URL base de tu recurso de Azure OpenAI**, por ejemplo, `https://mi-recurso.openai.azure.com/`.
+- `AZURE_OPENAI_API_KEY`: Es la **llave secreta de autenticación** que Azure te entrega al crear el recurso OpenAI.
+- `AZURE_OPENAI_API_VERSION`:Es la **versión de la API de Azure OpenAI** que quieres usar, por ejemplo: `2024-05-01-preview`
+- `AZURE_OPENAI_ASSISTANT_ID`: Es el **identificador único de un “asistente” en Azure OpenAI**.
+- `AZURE_OPENAI_DEPLOYMENT_NAME`: Es el **nombre del despliegue del modelo que configuraste en Azure OpenAI**, por ejemplo: `gpt-35-turbo`.
 
 ## Estructura del Proyecto
 
@@ -155,10 +91,8 @@ asistente-proyectos-inversion/
 │       └── templates/
 │           └── index.html
 ├── requirements.txt
-├── wsgi.py
+├── runtime.txt
 ├── Procfile
-├── Dockerfile
-├── docker-compose.yml
 ├── .env
 └── README.md
 ```
@@ -168,11 +102,6 @@ asistente-proyectos-inversion/
 ### Error de importación del módulo chatbot
 Si encuentras errores relacionados con `src.core.chatbot`, puedes comentar esa línea en `src/main.py` ya que no parece estar siendo utilizada en la aplicación web.
 
-### Error de permisos en Docker
-Asegúrate de que el directorio `src/web/static/documents` tenga los permisos correctos:
-```bash
-chmod 755 src/web/static/documents
-```
 
 ### Error de variables de entorno
 Si recibes errores sobre variables de entorno no configuradas:
@@ -180,20 +109,8 @@ Si recibes errores sobre variables de entorno no configuradas:
 2. Asegúrate de que las variables `OPENAI_API_KEY` y `OPENAI_API_BASE` estén configuradas
 3. Reinicia la aplicación después de crear/modificar el archivo `.env`
 
-## Contribuir
-
-1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## Contacto
+Daniel Rambaut- [@linkedin]([https://www.linkedin.com/in/felipe-rambaut/]) - rambautlemusdanielfelipe@gmail.com
 
-Tu Nombre - [@tutwitter](https://twitter.com/tutwitter) - email@ejemplo.com
-
-Link del Proyecto: [https://github.com/tu-usuario/asistente-proyectos-inversion](https://github.com/tu-usuario/asistente-proyectos-inversion)
+Link del Proyecto: [https://github.com/tu-usuario/asistente-proyectos-inversion](https://github.com/tu-usuario/asistente-proyectos-inversion](https://github.com/drambaut/Asistente-de-IA---proyectos-de-inversion.git)
