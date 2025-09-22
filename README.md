@@ -36,17 +36,16 @@ pip install -r requirements.txt
 ```
 
 4. Configurar las variables de entorno:
-Crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
-```
-# Configuración de Azure OpenAI
-OPENAI_API_KEY=tu_api_key_de_azure_openai
-OPENAI_API_BASE=https://tu-instancia.openai.azure.com
+Copiar el archivo `.env.example` del repositorio y rellenar las variables de entorno.:
 
-# Clave secreta para Flask (cambiar en producción)
-SECRET_KEY=tu_clave_secreta_aqui
-```
 
-**Nota**: Reemplaza `tu_api_key_de_azure_openai` y `https://tu-instancia.openai.azure.com` con tus credenciales reales de Azure OpenAI.
+`AZURE_OPENAI_ENDPOINT`=https://tu-recurso.openai.azure.com        # URL base del recurso en Azure
+`AZURE_OPENAI_API_KEY`=tu_api_key_de_azure_openai                  # Llave secreta para autenticar solicitudes
+`AZURE_OPENAI_API_VERSION`=2024-05-01-preview                      # Versión de la API que se va a usar
+`AZURE_OPENAI_ASSISTANT_ID`=asst_abc123xyz                         # ID único del asistente en Azure OpenAI
+`AZURE_OPENAI_DEPLOYMENT_NAME`=gpt-35-turbo                        # Nombre del despliegue del modelo
+
+**Nota**: Reemplaza todos los valores con tus credenciales reales de Azure OpenAI.
 
 ## Uso Local
 
@@ -111,6 +110,6 @@ Si recibes errores sobre variables de entorno no configuradas:
 
 
 ## Contacto
-Daniel Rambaut- [@linkedin]([https://www.linkedin.com/in/felipe-rambaut/]) - rambautlemusdanielfelipe@gmail.com
+Daniel Rambaut - [LinkedIn](https://www.linkedin.com/in/felipe-rambaut/) - rambautlemusdanielfelipe@gmail.com  
 
-Link del Proyecto: [https://github.com/tu-usuario/asistente-proyectos-inversion](https://github.com/tu-usuario/asistente-proyectos-inversion](https://github.com/drambaut/Asistente-de-IA---proyectos-de-inversion.git)
+Link del Proyecto: [Asistente de IA - Proyectos de Inversión](https://github.com/drambaut/Asistente-de-IA---proyectos-de-inversion)
