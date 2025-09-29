@@ -7,10 +7,13 @@ import traceback
 import logging
 from dotenv import load_dotenv
 from docx import Document
+from docx.shared import Pt
+from docx.enum.text import WD_BREAK
 from openai import AzureOpenAI
 import json
 import time
 import httpx
+import re  # <- para procesar markdown inline
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -75,9 +78,88 @@ def ask_markdown_azure(messages, *, model_name=None, max_tokens=1500, temperatur
     return full_text
 
 # ============================================================================
-# Generar documento Word a partir de las respuestas del flujo
+# Helpers DOCX: convertir Markdown simple a runs/estilos reales
+# ============================================================================
+def _add_rich_text(paragraph, text: str):
+    """
+    Convierte **negrita**, *cursiva* y `codigo` en runs con formato en python-docx.
+    """
+    token_re = re.compile(r'(\*\*.+?\*\*|\*.+?\*|`.+?`)')
+    parts = token_re.split(text)
+
+    for part in parts:
+        if not part:
+            continue
+        if part.startswith('**') and part.endswith('**'):
+            run = paragraph.add_run(part[2:-2])
+            run.bold = True
+        elif part.startswith('*') and part.endswith('*'):
+            run = paragraph.add_run(part[1:-1])
+            run.italic = True
+        elif part.startswith('`') and part.endswith('`'):
+            run = paragraph.add_run(part[1:-1])
+            run.font.name = "Courier New"
+            run.font.size = Pt(10)
+        else:
+            paragraph.add_run(part)
+
+def _add_markdown_line(doc, line: str):
+    """
+    Soporta:
+      - Encabezados: #, ##, ###
+      - Listas: "- " y "1. "
+      - Párrafos normales con **negrita**/*cursiva*/`codigo`
+      - '---' como salto de línea
+    """
+    s = line.strip()
+    if not s:
+        return
+
+    if s == '---':
+        p = doc.add_paragraph()
+        p.add_run().add_break(WD_BREAK.LINE)
+        return
+
+    if s.startswith('### '):
+        doc.add_heading(s[4:], level=3)
+        return
+    if s.startswith('## '):
+        doc.add_heading(s[3:], level=2)
+        return
+    if s.startswith('# '):
+        doc.add_heading(s[2:], level=1)
+        return
+
+    # Listas numeradas: "1. Texto"
+    if re.match(r'^\d+\.\s', s):
+        p = doc.add_paragraph(style='List Number')
+        _add_rich_text(p, re.sub(r'^\d+\.\s', '', s, count=1))
+        return
+
+    # Listas con viñetas: "- Texto" o "* Texto"
+    if s.startswith('- '):
+        p = doc.add_paragraph(style='List Bullet')
+        _add_rich_text(p, s[2:])
+        return
+    if s.startswith('* '):
+        p = doc.add_paragraph(style='List Bullet')
+        _add_rich_text(p, s[2:])
+        return
+
+    # Párrafo normal
+    p = doc.add_paragraph()
+    _add_rich_text(p, s)
+
+# ============================================================================
+# Generar documento Word a partir de las respuestas del flujo (UTF-8 + negritas reales)
 # ============================================================================
 def generate_project_document(responses: dict, filename: str = None) -> str:
+    """
+    Genera el documento final en DOCX.
+    - El contenido se pide al modelo en Markdown.
+    - Se convierte a DOCX aplicando estilos: headings, listas, negritas reales, etc.
+    - DOCX es XML UTF-8 internamente; en Python 3 todo es Unicode.
+    """
     if not filename:
         filename = f"proyecto_inversion_{int(time.time())}.docx"
 
@@ -88,7 +170,8 @@ def generate_project_document(responses: dict, filename: str = None) -> str:
         "del DNP de Colombia. Con la siguiente información recolectada del usuario, organiza un "
         "documento estructurado como un proyecto de inversión en Infraestructura de Datos o IA.\n\n"
         "El documento debe estar en español, redactado en tono técnico y formal, con estilo claro.\n"
-        "Usa títulos y subtítulos en el formato Markdown (#, ##, ###).\n"
+        "Usa títulos y subtítulos en el formato Markdown (#, ##, ###). Usa viñetas (- ) y numeraciones (1.) cuando aplique.\n"
+        "No incluyas HTML.\n\n"
         "Secciones mínimas:\n"
         "- Introducción\n"
         "- Problema central\n"
@@ -100,39 +183,28 @@ def generate_project_document(responses: dict, filename: str = None) -> str:
         "- Medios y fines (directos e indirectos)\n"
         "- Cadena de valor\n"
         "- Conclusión\n\n"
-        f"Información recolectada: {json.dumps(responses, indent=2, ensure_ascii=False)}\n\n"
-        "Redacta el documento con títulos y subtítulos claros, listados cuando corresponda y párrafos bien organizados."
+        f"Información recolectada (JSON UTF-8): {json.dumps(responses, indent=2, ensure_ascii=False)}\n\n"
+        "Entrega el texto final en Markdown."
     )
 
     completion = client.chat.completions.create(
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
         messages=[
-            {"role": "system", "content": "Eres un asistente experto en proyectos MGA/IDEC/IA. Responde en Markdown."},
+            {"role": "system", "content": "Eres un asistente experto en proyectos MGA/IDEC/IA. Responde en Markdown puro."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=2500,
         temperature=0.5
     )
 
-    text = completion.choices[0].message.content.strip()
+    md_text = (completion.choices[0].message.content or "").strip()
 
+    # Construir DOCX (internamente UTF-8)
     doc = Document()
     doc.add_heading("Proyecto de Inversión en IDEC/IA", level=0)
 
-    # Interpretar títulos Markdown y párrafos
-    for line in text.split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-
-        if line.startswith("### "):
-            doc.add_heading(line.replace("### ", ""), level=3)
-        elif line.startswith("## "):
-            doc.add_heading(line.replace("## ", ""), level=2)
-        elif line.startswith("# "):
-            doc.add_heading(line.replace("# ", ""), level=1)
-        else:
-            doc.add_paragraph(line)
+    for raw_line in md_text.splitlines():
+        _add_markdown_line(doc, raw_line)
 
     doc.save(filepath)
     return filepath
@@ -187,6 +259,8 @@ def chat_alt():
         # Palabra para volver al flujo normal
         if user_message.strip().lower() == "finalizar":
             session['mode'] = "flow"
+            # Marca que venimos de chat libre
+            session['resume_from_alt'] = True
             return jsonify({
                 "response": "✅ Has finalizado el chat libre. Volvemos al flujo normal.",
                 "options": ["Continuar flujo"],
@@ -285,28 +359,39 @@ def chat():
     if session.get("mode") == "alt":
         return chat_alt()
 
-    data = request.get_json()
-    user_message = data.get('message', '').strip()
+    data = request.get_json() or {}
+    user_message = (data.get('message') or '').strip()
     user_lower = user_message.lower()
 
     current_step = session.get('current_step', 'intro_bienvenida')
     responses = session.get('responses', {})
 
-    # inicio
-    if current_step == 'intro_bienvenida' and user_lower in ['iniciar', 'start']:
+    # --- Inicio del flujo (comando 'iniciar' / 'start') ---
+    if current_step == 'intro_bienvenida' and user_lower in ('iniciar', 'start'):
         intro = conversation_flow['intro_bienvenida']
         session['current_step'] = 'intro_bienvenida'
         return jsonify({
             "response": intro['prompt'],
             "current_step": "intro_bienvenida",
-            "options": intro['options']
+            "options": intro.get('options', [])
         })
 
-    # guardar respuesta
+    # --- Reanudar flujo desde chat libre (no guardar ni avanzar) ---
+    if session.pop('resume_from_alt', False) or user_lower in ('continuar flujo', 'continuar', 'seguir', 'volver al flujo'):
+        step_conf = conversation_flow.get(current_step, {})
+        payload = {
+            "response": step_conf.get("prompt", "…"),
+            "current_step": current_step
+        }
+        if "options" in step_conf:
+            payload["options"] = step_conf["options"]
+        return jsonify(payload)
+
+    # --- Guardar respuesta del paso actual ---
     responses[current_step] = user_message
     session['responses'] = responses
 
-    # avanzar flujo
+    # --- Avanzar flujo ---
     next_step = conversation_flow.get(current_step, {}).get("next_step")
 
     # 'finalizado' es estado terminal (o ausencia de next_step)
@@ -335,7 +420,6 @@ def chat():
     if "options" in step_conf:
         payload["options"] = step_conf["options"]
     return jsonify(payload)
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
