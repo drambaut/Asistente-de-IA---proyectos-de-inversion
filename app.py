@@ -13,13 +13,13 @@ from openai import AzureOpenAI
 import json
 import time
 import httpx
-import re  # <- para procesar markdown inline
+import re  # para procesar markdown inline
 
-# Configurar logging
+# --------------------------
+# Logging & Config
+# --------------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Cargar variables de entorno
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -294,30 +294,15 @@ def chat_alt():
         return jsonify({"error": str(e)}), 500
 
 # ============================================================================
-# FLUJO PRINCIPAL
+# FLUJO PRINCIPAL (simplificado con dos opciones iniciales)
 # ============================================================================
 conversation_flow = {
     "intro_bienvenida": {
-        "prompt": "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\nTe acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación.\n\n🧰 Te haré preguntas clave para estructurar el proyecto.\n\n❓ ¿Tienes dudas generales antes de empezar?",
+        "prompt": "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\nTe acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación.\n\n🧰 Te haré preguntas clave para estructurar el proyecto.\n\n❓ Antes de continuar, ¿está todo claro? o ¿tienes algunas preguntas?",
         "options": [
             "Sí, entiendo el proceso y deseo continuar",
-            "No del todo, me gustaría una breve explicación",
-            "Tengo dudas puntuales sobre los lineamientos del Plan Nacional de Infraestructura de Datos (PNID) o del CONPES 4144 de Inteligencia Artificial"
+            "Tengo preguntas, quiero empezar un Chat Libre para resolverlas"
         ],
-        "next_step": "pregunta_1_ciclo"
-    },
-    "pregunta_1_ciclo": {
-        "prompt": "¿Conoces el ciclo de inversión pública y las fases que lo componen?",
-        "options": ["Sí, lo conozco", "No, me gustaría entenderlo mejor"],
-        "next_step": "pregunta_2_herramienta"
-    },
-    "explicacion_ciclo": {
-        "prompt": "📘 El ciclo de inversión pública incluye:\n• Identificación del problema\n• Formulación\n• Evaluación\n• Registro en BPIN\n• Implementación y seguimiento",
-        "next_step": "pregunta_2_herramienta"
-    },
-    "pregunta_2_herramienta": {
-        "prompt": "¿Tienes claro en qué parte del proceso se aplica esta herramienta?",
-        "options": ["Sí, etapa de formulación", "No, no lo tengo claro"],
         "next_step": "pregunta_3_entidad"
     },
     "pregunta_3_entidad": {
@@ -353,6 +338,9 @@ conversation_flow = {
     }
 }
 
+# ============================================================================
+# Handler del flujo
+# ============================================================================
 @app.route('/api/chat', methods=['POST'])
 def chat():
     # Si estamos en modo alternativo, delegamos a chat_alt
@@ -374,6 +362,18 @@ def chat():
             "response": intro['prompt'],
             "current_step": "intro_bienvenida",
             "options": intro.get('options', [])
+        })
+
+    # --- Opción inicial: abrir Chat Libre desde la pantalla de bienvenida ---
+    if current_step == 'intro_bienvenida' and user_lower in (
+        'tengo preguntas, quiero empezar un chat libre para resolverlas',
+        'tengo preguntas, quiero empezar un chat libre',
+        'chat libre'
+    ):
+        session['mode'] = 'alt'
+        return jsonify({
+            "response": "💬 Has activado el **Chat Libre**. Haz aquí las preguntas que necesites respecto al proceso.\n\nEscribe **Finalizar** para volver al flujo.",
+            "format": "markdown"
         })
 
     # --- Reanudar flujo desde chat libre (no guardar ni avanzar) ---
@@ -421,5 +421,8 @@ def chat():
         payload["options"] = step_conf["options"]
     return jsonify(payload)
 
+# --------------------------
+# Run
+# --------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
