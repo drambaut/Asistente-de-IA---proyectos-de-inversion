@@ -33,9 +33,50 @@ client = AzureOpenAI(
     http_client=httpx.Client(verify=False)
 )
 
-# ==========================================================
-# FUNCION PARA GENERAR DOCUMENTO WORD
-# ==========================================================
+# ============================================================================
+# Helper: pedir Markdown y reintentar si la respuesta se corta por tokens
+# ============================================================================
+def ask_markdown_azure(messages, *, model_name=None, max_tokens=1500, temperature=0.4, max_rounds=3):
+    """
+    Devuelve SIEMPRE Markdown (texto plano) y, si el modelo se corta por tokens,
+    hace rondas de 'continúa' hasta completar o llegar a max_rounds.
+    """
+    full_text = ""
+    rounds = 0
+    _messages = list(messages)  # copia para ir acumulando
+
+    # Resuelve nombre del deployment/modelo desde env si no llega
+    model_name = model_name or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+
+    while rounds < max_rounds:
+        rounds += 1
+        resp = client.chat.completions.create(
+            model=model_name,
+            messages=_messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        choice = resp.choices[0]
+        chunk = (choice.message.content or "").strip()
+        full_text += chunk
+
+        finish = getattr(choice, "finish_reason", None)
+
+        # Si no se cortó, salimos
+        if finish not in ("length", "content_filter"):
+            break
+
+        # Si se cortó por longitud, pedimos continuación
+        _messages = _messages + [
+            {"role": "assistant", "content": chunk},
+            {"role": "user", "content": "Por favor continúa exactamente donde te quedaste."}
+        ]
+
+    return full_text
+
+# ============================================================================
+# Generar documento Word a partir de las respuestas del flujo
+# ============================================================================
 def generate_project_document(responses: dict, filename: str = None) -> str:
     if not filename:
         filename = f"proyecto_inversion_{int(time.time())}.docx"
@@ -46,9 +87,9 @@ def generate_project_document(responses: dict, filename: str = None) -> str:
         "Eres un experto en formulación de proyectos bajo la Metodología General Ajustada (MGA) "
         "del DNP de Colombia. Con la siguiente información recolectada del usuario, organiza un "
         "documento estructurado como un proyecto de inversión en Infraestructura de Datos o IA.\n\n"
-        "👉 El documento debe estar en español, redactado en tono técnico y formal, con estilo claro.\n"
-        "👉 Usa títulos y subtítulos en el formato Markdown (#, ##, ###).\n"
-        "👉 Secciones mínimas:\n"
+        "El documento debe estar en español, redactado en tono técnico y formal, con estilo claro.\n"
+        "Usa títulos y subtítulos en el formato Markdown (#, ##, ###).\n"
+        "Secciones mínimas:\n"
         "- Introducción\n"
         "- Problema central\n"
         "- Causas y efectos (directos e indirectos)\n"
@@ -66,7 +107,7 @@ def generate_project_document(responses: dict, filename: str = None) -> str:
     completion = client.chat.completions.create(
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
         messages=[
-            {"role": "system", "content": "Eres un asistente experto en proyectos MGA/IDEC/IA."},
+            {"role": "system", "content": "Eres un asistente experto en proyectos MGA/IDEC/IA. Responde en Markdown."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=2500,
@@ -78,6 +119,7 @@ def generate_project_document(responses: dict, filename: str = None) -> str:
     doc = Document()
     doc.add_heading("Proyecto de Inversión en IDEC/IA", level=0)
 
+    # Interpretar títulos Markdown y párrafos
     for line in text.split("\n"):
         line = line.strip()
         if not line:
@@ -95,9 +137,9 @@ def generate_project_document(responses: dict, filename: str = None) -> str:
     doc.save(filepath)
     return filepath
 
-# ==========================================================
-# RUTAS BASICAS
-# ==========================================================
+# ============================================================================
+# Rutas básicas
+# ============================================================================
 @app.route('/')
 def index():
     session.clear()
@@ -130,45 +172,56 @@ def reset_conversation():
     session['mode'] = 'flow'
     return jsonify({"status": "ok", "message": "Conversación reiniciada"})
 
-# ==========================================================
+# ============================================================================
 # CHAT LIBRE (IA)
-# ==========================================================
+# ============================================================================
 @app.route('/api/chat_alt', methods=['POST'])
 def chat_alt():
     try:
         data = request.get_json(silent=True) or {}
-        user_message = data.get("message", "").strip()
+        user_message = (data.get("message") or "").strip()
 
+        # Entramos a modo chat libre
         session['mode'] = "alt"
 
-        if user_message.lower() == "finalizar":
+        # Palabra para volver al flujo normal
+        if user_message.strip().lower() == "finalizar":
             session['mode'] = "flow"
             return jsonify({
                 "response": "✅ Has finalizado el chat libre. Volvemos al flujo normal.",
-                "options": ["Continuar flujo"]
+                "options": ["Continuar flujo"],
+                "format": "markdown"
             })
 
-        completion = client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            messages=[
-                {"role": "system", "content": "Eres un asistente experto en proyectos TIC del gobierno colombiano."},
-                {"role": "user", "content": user_message}
-            ],
-            max_tokens=500,
-            temperature=0.7
+        # Prompt de sistema que EXIGE Markdown
+        system_msg = {
+            "role": "system",
+            "content": (
+                "Eres un asistente experto en proyectos TIC del gobierno colombiano. "
+                "RESPONDE SIEMPRE en Markdown válido: usa encabezados con #, ##, ###; "
+                "negritas con **texto**; listas con -, 1. 2.; bloques de código con ```; "
+                "no uses HTML."
+            )
+        }
+        user_msg = {"role": "user", "content": user_message}
+
+        md = ask_markdown_azure(
+            [system_msg, user_msg],
+            model_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+            max_tokens=1500,     # espacio para respuestas largas
+            temperature=0.4,     # más estable
+            max_rounds=3         # continúa si se corta por tokens
         )
 
-        assistant_message = completion.choices[0].message.content.strip()
-
-        return jsonify({"response": assistant_message})
+        return jsonify({"response": md, "format": "markdown"})
 
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-# ==========================================================
+# ============================================================================
 # FLUJO PRINCIPAL
-# ==========================================================
+# ============================================================================
 conversation_flow = {
     "intro_bienvenida": {
         "prompt": "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\nTe acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación.\n\n🧰 Te haré preguntas clave para estructurar el proyecto.\n\n❓ ¿Tienes dudas generales antes de empezar?",
@@ -256,24 +309,31 @@ def chat():
     # avanzar flujo
     next_step = conversation_flow.get(current_step, {}).get("next_step")
 
-    if not next_step:
+    # 'finalizado' es estado terminal (o ausencia de next_step)
+    if (not next_step) or (next_step == "finalizado"):
         session['current_step'] = "finalizado"
+
         filepath = generate_project_document(responses)
         filename = os.path.basename(filepath)
         download_url = url_for('download_file', filename=filename)
 
         return jsonify({
-            "response": f"✅ Flujo completado. Documento generado.\n\n📄 <a href='{download_url}' target='_blank'>Descargar documento</a>",
+            "response": (
+                "✅ Flujo completado. Documento generado. "
+                f"<a href='{download_url}' target='_blank'>Descargar documento</a>"
+            ),
             "current_step": "finalizado"
         })
 
+    # Caso normal: continuar al siguiente paso definido en el flujo
     session['current_step'] = next_step
+    step_conf = conversation_flow.get(next_step, {})
     payload = {
-        "response": conversation_flow[next_step]["prompt"],
+        "response": step_conf.get("prompt", "…"),
         "current_step": next_step
     }
-    if "options" in conversation_flow[next_step]:
-        payload["options"] = conversation_flow[next_step]["options"]
+    if "options" in step_conf:
+        payload["options"] = step_conf["options"]
     return jsonify(payload)
 
 
