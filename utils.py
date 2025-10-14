@@ -22,6 +22,8 @@ from docx.shared import Pt
 from docx.enum.text import WD_BREAK
 from openpyxl import load_workbook
 
+
+
 SYSTEM_PRIMER = """
 Contexto fijo:
 - País por defecto: Colombia. Cuando se hable de departamentos/municipios/localidades, se asume Colombia.
@@ -136,7 +138,7 @@ def causas_tree_to_outline(tree: Dict[str, Any]) -> str:
                 lines.append(f"  a) {cidesc}")
                 for ei in ci.get("efectos_indirectos", []):
                     lines.append(f"     * Efecto indirecto: {(ei.get('descripcion') or '').strip()}")
-    return "\\n".join(lines)
+    return "\n".join(lines)
 
 
 def objetivos_tree_to_outline(tree: Dict[str, Any]) -> str:
@@ -159,7 +161,7 @@ def objetivos_tree_to_outline(tree: Dict[str, Any]) -> str:
                 lines.append(f"  a) {midesc}")
                 for fi in mi.get("fines_indirectos", []):
                     lines.append(f"     * Fin indirecto: {(fi.get('descripcion') or '').strip()}")
-    return "\\n".join(lines)
+    return "\n".join(lines)
 
 
 # -------------------------- Carga/guardado JSON --------------------------
@@ -215,29 +217,29 @@ def generate_project_document(
     prompt = (
         "Eres un experto en formulación de proyectos bajo la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación en Colombia(DNP). Redacta en ESPAÑOL "
         "y devuelve contenido en Markdown estructurado con #, ##, ### y #### (sin códigos C1/O1 visibles; "
-        "no uses paréntesis con IDs). El sistema convertirá luego a Word con títulos y viñetas.\\n\\n"
-        "ORDEN OBLIGATORIO DE SECCIONES:\\n"
-        "## Introducción\\n"
-        "## Planteamiento del problema u oportunidad\\n"
-        "## Población afectada y objetivo\\n"
-        "## Localización\\n"
-        "## Marco del problema: Causas y efectos\\n"
-        "## Marco de objetivos: Medios y fines\\n"
-        "## Componentes del proyecto\\n"
-        "## Cadena de valor\\n"
-        "## Conclusión y justificación final\\n\\n"
-        "INSTRUCCIONES:\\n"
-        "- Integra los datos del usuario y los árboles provistos a continuación.\\n"
+        "no uses paréntesis con IDs). El sistema convertirá luego a Word con títulos y viñetas.\n\n"
+        "ORDEN OBLIGATORIO DE SECCIONES:\n"
+        "## Introducción\n"
+        "## Planteamiento del problema u oportunidad\n"
+        "## Población afectada y objetivo\n"
+        "## Localización\n"
+        "## Marco del problema: Causas y efectos\n"
+        "## Marco de objetivos: Medios y fines\n"
+        "## Componentes del proyecto\n"
+        "## Cadena de valor\n"
+        "## Conclusión y justificación final\n\n"
+        "INSTRUCCIONES:\n"
+        "- Integra los datos del usuario y los árboles provistos a continuación.\n"
         "- En 'Marco del problema: Causas y efectos': para cada causa, usa '### Causa' y un párrafo explicativo que conecte con la razón del proyecto; "
         "luego '#### Efecto directo' con explicación; después '#### Causas indirectas' listadas (a), b), ...) y bajo cada una viñetas con 'Efecto indirecto: ...'. "
-        "No muestres códigos de IDs.\\n"
+        "No muestres códigos de IDs.\n"
         "- En 'Marco de objetivos: Medios y fines': para cada objetivo, usa '### Objetivo' con explicación; "
-        "'#### Medio directo' y '#### Fin directo'; luego '#### Medios indirectos' listados (a), b), ...) y bajo cada uno viñetas con 'Fin indirecto: ...'. Sin códigos.\\n"
-        "- En 'Componentes del proyecto' incluye los componentes seleccionados por el usuario si existen; enuméralos con viñetas y explica brevemente su papel.\\n"
-        "- Mantén coherencia narrativa entre problema y objetivos, y cierra con una conclusión que justifique por qué el proyecto es sólido para recibir inversión.\\n\\n"
-        f"Datos del usuario (JSON):\\n{json.dumps(clean, ensure_ascii=False, indent=2)}\\n\\n"
-        "Árbol de causas/efectos (outline):\\n" + causas_outline + "\\n\\n"
-        "Árbol de objetivos/medios/fines (outline):\\n" + objetivos_outline + "\\n\\n"
+        "'#### Medio directo' y '#### Fin directo'; luego '#### Medios indirectos' listados (a), b), ...) y bajo cada uno viñetas con 'Fin indirecto: ...'. Sin códigos.\n"
+        "- En 'Componentes del proyecto' incluye los componentes seleccionados por el usuario si existen; enuméralos con viñetas y explica brevemente su papel.\n"
+        "- Mantén coherencia narrativa entre problema y objetivos, y cierra con una conclusión que justifique por qué el proyecto es sólido para recibir inversión.\n\n"
+        f"Datos del usuario (JSON):\n{json.dumps(clean, ensure_ascii=False, indent=2)}\n\n"
+        "Árbol de causas/efectos (outline):\n" + causas_outline + "\n\n"
+        "Árbol de objetivos/medios/fines (outline):\n" + objetivos_outline + "\n\n"
         "RECUERDA: No incluyas códigos como C1, CI1, O1, MI1 en los títulos ni en el texto."
         "verifica consistencia numérica, define términos confusos y resume hallazgos clave al final de la sección"
     )
@@ -567,7 +569,7 @@ def causas_tree_to_markdown(tree: Dict[str, Any]) -> str:
             lines.append(f"  - **{ci['id']}**: {ci.get('descripcion','') or ''}")
             for ei in ci.get("efectos_indirectos", []):
                 lines.append(f"    - {ei['id']}: {ei.get('descripcion','') or ''}")
-    return "\\n".join(lines)
+    return "\n".join(lines)
 
 
 def objetivos_tree_to_markdown(tree: Dict[str, Any]) -> str:
@@ -583,7 +585,7 @@ def objetivos_tree_to_markdown(tree: Dict[str, Any]) -> str:
             lines.append(f"  - **{mi['id']}**: {mi.get('descripcion','') or ''}")
             for fi in mi.get("fines_indirectos", []):
                 lines.append(f"    - {fi['id']}: {fi.get('descripcion','') or ''}")
-    return "\\n".join(lines)
+    return "\n".join(lines)
 
 
 # -------------------------- Orquestación post-upload --------------------------
@@ -606,9 +608,9 @@ def process_uploaded_excel(tipo: str, filepath: str, out_dir: str) -> Dict[str, 
 conversation_flow = {
     "intro_bienvenida": {
         "prompt":
-            "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\\n\\n"
-            "Te acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación.\\n\\n"
-            "🧰 Te haré preguntas clave para estructurar el proyecto.\\n\\n"
+            "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\n"
+            "Te acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación.\n\n"
+            "🧰 Te haré preguntas clave para estructurar el proyecto.\n\n"
             "❓ Antes de continuar, ¿todo está claro? o ¿tienes algunas preguntas?" ,
         "options": [
             "Sí, entiendo el proceso y deseo continuar",
@@ -641,7 +643,7 @@ conversation_flow = {
 
     "idec_componentes": {
         "prompt":
-            "📚 La siguiente es la lista de los componentes que integran la IDEC, por favor selecciona los componentes que deseas incluir en tu proyecto de inversión. Selección múltiple :\\n",
+            "📚 La siguiente es la lista de los componentes que integran la IDEC, por favor selecciona los componentes que deseas incluir en tu proyecto de inversión. Selección múltiple :\n",
         "next_step": "nombre_proyecto"
     },
 
