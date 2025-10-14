@@ -134,13 +134,13 @@
 
     function setSendingState(flag){
       userInput.disabled = flag; sendBtn.disabled = flag;
-      sendBtn.textContent = flag ? 'Enviando…' : 'Enviar';
+      sendBtn.textContent = flag ? 'Enviando' : 'Enviar';
     }
 
     function pendingText(){
-      if (mode === 'alt') return 'Generando respuesta…';
-      if (currentStep === 'cadena_valor') return 'Generando documento…';
-      return 'Generando respuesta…';
+      if (mode === 'alt') return 'Generando respuesta';
+      if (currentStep === 'cadena_valor') return 'Generando documento';
+      return 'Generando respuesta';
     }
 
     // ---------- Widget inline de subida (sin cambios) ----------

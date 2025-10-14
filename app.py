@@ -241,7 +241,7 @@ conversation_flow = {
 
     "elige_vertical": {
         "prompt": "💡 ¿Deseas construir un proyecto de inversión asociando componentes de tecnologías de la información y las comunicaciones en temas de Infraestructura de datos (IDEC) o Inteligencia Artificial (IA)?",
-        "options": ["Sí, en IDEC", "S en IA", "No (Cierre de la conversación)"],
+        "options": ["Sí, en IDEC", "Sí, en IA", "No (Cierre de la conversación)"],
         "next_step": "nombre_proyecto"
     },
 
