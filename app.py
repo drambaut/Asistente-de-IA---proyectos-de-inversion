@@ -13,7 +13,8 @@ from utils import (
     parse_causas_xlsx, parse_objetivos_xlsx,
     save_tree_json, process_uploaded_excel,
     causas_tree_to_markdown, objetivos_tree_to_markdown,
-    conversation_flow, validate_excel_bytes
+    conversation_flow, validate_excel_bytes, 
+    SYSTEM_PRIMER
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -129,7 +130,7 @@ def reset_conversation():
 # ---------- Chat Libre ----------
 def _bootstrap_alt_explanation(topic_md: str):
     session['mode'] = 'alt'
-    system_msg = {"role": "system", "content": "Responde SIEMPRE en Markdown claro, con viñetas y ejemplo."}
+    system_msg = {"role": "system", "content": SYSTEM_PRIMER + "\nResponde SIEMPRE en Markdown claro, con viñetas y ejemplo."}
     user_msg   = {"role": "user", "content": f"{topic_md}\n\nTermina con: 'Cuando estés listo, escribe **Finalizar** para volver al flujo.'"}  # noqa: E501
     md = ask_markdown_azure([system_msg, user_msg], client=client, max_tokens=1000, temperature=0.4)
     return "💬 Has activado el **Chat Libre** para resolver esta duda.\n\n" + md
@@ -152,7 +153,7 @@ def chat_alt():
         })
 
     md = ask_markdown_azure(
-        [{"role":"system","content":"Responde en Markdown válido, sin HTML."},
+        [{"role":"system","content":SYSTEM_PRIMER + "\nResponde en Markdown válido, sin HTML."},
          {"role":"user","content":user_message}],
         client=client,
         model_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),

@@ -22,6 +22,15 @@ from docx.shared import Pt
 from docx.enum.text import WD_BREAK
 from openpyxl import load_workbook
 
+SYSTEM_PRIMER = """
+Contexto fijo:
+- País por defecto: Colombia. Cuando se hable de departamentos/municipios/localidades, se asume Colombia.
+- DNP = Departamento Nacional de Planeación (Colombia).
+- IDEC = Infraestructura de Datos del Estado Colombiano.
+- Usa terminología y normatividad de Colombia cuando aplique.
+- Si te dan porcentajes o proporciones sin base absoluta, explica el cálculo y estima usando datos oficiales si están disponibles.
+- No muestres códigos internos de árbol (C1, CI1, O1, MI1) en el texto final.
+"""
 
 # -------------------------- LLM helper --------------------------
 def ask_markdown_azure(
@@ -32,10 +41,14 @@ def ask_markdown_azure(
     max_tokens: int = 1800,
     temperature: float = 0.4,
     max_rounds: int = 3,
+    use_primer = True
 ) -> str:
     """Envía mensajes a Azure OpenAI y concatena si se corta por longitud."""
     full_text, rounds = "", 0
     _messages = list(messages)
+    if use_primer:
+        sys = {"role": "system", "content": SYSTEM_PRIMER + "\nResponde en Markdown válido."}
+        _messages = [sys] + _messages
     if model_name is None:
         model_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
     while rounds < max_rounds:
@@ -200,7 +213,7 @@ def generate_project_document(
 
     # Prompt con orden de secciones fijo y sin códigos de IDs visibles
     prompt = (
-        "Eres un experto en formulación de proyectos bajo la MGA (DNP). Redacta en ESPAÑOL "
+        "Eres un experto en formulación de proyectos bajo la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación en Colombia(DNP). Redacta en ESPAÑOL "
         "y devuelve contenido en Markdown estructurado con #, ##, ### y #### (sin códigos C1/O1 visibles; "
         "no uses paréntesis con IDs). El sistema convertirá luego a Word con títulos y viñetas.\\n\\n"
         "ORDEN OBLIGATORIO DE SECCIONES:\\n"
@@ -226,12 +239,13 @@ def generate_project_document(
         "Árbol de causas/efectos (outline):\\n" + causas_outline + "\\n\\n"
         "Árbol de objetivos/medios/fines (outline):\\n" + objetivos_outline + "\\n\\n"
         "RECUERDA: No incluyas códigos como C1, CI1, O1, MI1 en los títulos ni en el texto."
+        "verifica consistencia numérica, define términos confusos y resume hallazgos clave al final de la sección"
     )
 
     completion = client.chat.completions.create(
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
         messages=[
-            {"role": "system", "content": "Responde exclusivamente en Markdown válido."},
+            {"role": "system", "content": SYSTEM_PRIMER + "\nResponde exclusivamente en Markdown válido."},
             {"role": "user", "content": prompt},
         ],
         max_tokens=3000,
