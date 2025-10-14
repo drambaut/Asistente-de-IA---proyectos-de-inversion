@@ -4,3 +4,4 @@ openai>=1.12.0
 python-docx==0.8.11
 flask-cors==4.0.0
 gunicorn==21.2.0 
+openpyxl
