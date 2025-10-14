@@ -9,22 +9,40 @@
     body { background:#f8f9fa; font-family: 'Segoe UI', sans-serif; }
     .chat-container { max-width:800px; margin:2rem auto; background:white; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.1); }
     .chat-header { background:linear-gradient(135deg,#2c3e50,#3498db); color:white; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
-    .chat-messages { height:500px; overflow-y:auto; padding:1rem; background:#f8f9fa; }
+    .chat-messages { height:560px; overflow-y:auto; padding:1rem; background:#f8f9fa; }
     .message { margin-bottom:1rem; padding:1rem; border-radius:10px; max-width:80%; }
     .user-message { background:#e3f2fd; margin-left:auto; }
     .bot-message { background:white; margin-right:auto; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+
     .chat-input { padding:1rem; background:white; border-top:1px solid #eee; }
     .btn-send { border-radius:25px; padding:0.75rem 2rem; background:linear-gradient(135deg,#2c3e50,#3498db); border:none; color:white; }
+    .btn-send:disabled { opacity:.7; }
+
     .option-button { display:block; width:100%; margin:.3rem 0; padding:.5rem; border:1px solid #ddd; border-radius:8px; text-align:left; }
     .option-button:hover { background:#f0f0f0; }
+    /* Estado activo para multiselección IDEC */
+    .option-button.msel.active { background:#e3f2fd; border-color:#b6daff; }
 
-    /* Buen render para Markdown */
+    /* Markdown */
     .bot-message { white-space: normal; line-height: 1.5; }
     .bot-message h1 { font-size: 1.4rem; margin: .6rem 0; }
     .bot-message h2 { font-size: 1.2rem; margin: .5rem 0; }
     .bot-message h3 { font-size: 1.1rem; margin: .4rem 0; }
     .bot-message ul, .bot-message ol { padding-left: 1.2rem; }
     .bot-message code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* Pensando… */
+    .typing-wrap { margin-right:auto; }
+    .typing { display:inline-flex; align-items:center; gap:.5rem; font-style:italic; opacity:.9; }
+    .dot { width:.45rem; height:.45rem; border-radius:50%; background:#6c757d; display:inline-block; animation: blink 1.2s infinite ease-in-out; }
+    .dot:nth-child(2){ animation-delay:.15s; } .dot:nth-child(3){ animation-delay:.30s; }
+    @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+    /* Caja de subida (se mantiene igual) */
+    .uploader { border:1px dashed #8aa7c7; border-radius:10px; background:#f7fbff; padding:12px; margin-top:.5rem; }
+    .uploader .rowx { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+    .uploader input[type="file"] { max-width:280px; }
+    .uploader .status { font-size:.9rem; color:#6c757d; margin-left:.25rem; }
   </style>
 </head>
 <body>
@@ -46,105 +64,231 @@
       <div class="chat-input">
         <form id="chatForm" class="d-flex gap-2">
           <input type="text" id="userInput" class="form-control" placeholder="Escribe tu mensaje..." autocomplete="off" />
-          <button type="submit" class="btn btn-send">Enviar</button>
+          <button type="submit" id="sendBtn" class="btn btn-send">Enviar</button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- Markdown + Sanitizer -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
   <script>
-    let mode = "flow"; // por defecto flujo
+    let mode = "flow";
+    let currentStep = 'intro_bienvenida';
+
     const chatMessages = document.getElementById('chatMessages');
     const chatForm = document.getElementById('chatForm');
     const userInput = document.getElementById('userInput');
+    const sendBtn   = document.getElementById('sendBtn');
 
-    // Convertir Markdown -> HTML seguro
     function renderMarkdown(mdText) {
-      const dirty = marked.parse(mdText || "", { mangle: false, headerIds: true });
+      const dirty = marked.parse(mdText || "", { mangle:false, headerIds:true });
       return DOMPurify.sanitize(dirty);
     }
 
     function addMessage(msg, sender) {
       const div = document.createElement('div');
       div.className = `message ${sender}-message`;
-      // Renderizamos Markdown si viene del bot; el user va en texto literal
-      if (sender === 'bot') {
-        div.innerHTML = renderMarkdown(msg);
-      } else {
-        div.textContent = msg;
-      }
+      if (sender === 'bot') div.innerHTML = renderMarkdown(msg);
+      else div.textContent = msg;
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div;
     }
 
     function addOptionsMessage(msg, options) {
       const div = document.createElement('div');
       div.className = 'message bot-message';
       let html = `<div>${renderMarkdown(msg)}</div>`;
-      options.forEach(opt => {
-        html += `<button class="option-button" data-option="${opt}">${opt}</button>`;
-      });
-      div.innerHTML = html;
-      chatMessages.appendChild(div);
+      options.forEach(opt => { html += `<button class="option-button" data-option="${opt}">${opt}</button>`; });
+      div.innerHTML = html; chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
       div.querySelectorAll('.option-button').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-          addMessage(btn.dataset.option,'user');
-          sendMessage(btn.dataset.option);
-        });
+        btn.addEventListener('click',()=>{ addMessage(btn.dataset.option,'user'); sendMessage(btn.dataset.option); });
+      });
+      return div;
+    }
+
+    // indicador "pensando"
+    function showThinking(text) {
+      const wrap = document.createElement('div');
+      wrap.className = 'message bot-message typing-wrap';
+      wrap.innerHTML = `<div class="typing"><span>${text}</span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+      chatMessages.appendChild(wrap); chatMessages.scrollTop = chatMessages.scrollHeight; return wrap;
+    }
+    function replaceThinking(thinkingNode, html, options) {
+      const div = document.createElement('div');
+      div.className = 'message bot-message';
+      let inner = renderMarkdown(html || '…');
+      if (Array.isArray(options) && options.length) {
+        inner = `<div>${inner}</div>` + options.map(o=>`<button class="option-button" data-option="${o}">${o}</button>`).join('');
+      }
+      div.innerHTML = inner; thinkingNode.replaceWith(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      div.querySelectorAll('.option-button').forEach(btn=>{
+        btn.addEventListener('click',()=>{ addMessage(btn.dataset.option,'user'); sendMessage(btn.dataset.option); });
+      });
+      return div;
+    }
+
+    function setSendingState(flag){
+      userInput.disabled = flag; sendBtn.disabled = flag;
+      sendBtn.textContent = flag ? 'Enviando…' : 'Enviar';
+    }
+
+    function pendingText(){
+      if (mode === 'alt') return 'Generando respuesta…';
+      if (currentStep === 'cadena_valor') return 'Generando documento…';
+      return 'Generando respuesta…';
+    }
+
+    // ---------- Widget inline de subida (sin cambios) ----------
+    function injectUploadWidget(afterBubble, uploadMeta){
+      if (!afterBubble || !uploadMeta || !uploadMeta.expect_upload) return;
+      const tipo = uploadMeta.tipo; // 'causa' | 'objetivo'
+
+      const w = document.createElement('div');
+      w.className = 'uploader';
+      w.innerHTML = `
+        <div class="rowx">
+          <input type="file" class="form-control form-control-sm file-input" />
+          <button class="btn btn-success btn-sm btn-upload" disabled>Subir archivo</button>
+          <span class="status"></span>
+        </div>
+      `;
+      afterBubble.appendChild(w);
+
+      const fileInput = w.querySelector('.file-input');
+      const btnUpload = w.querySelector('.btn-upload');
+      const status    = w.querySelector('.status');
+      let selectedFile = null;
+
+      function setStatus(msg){ status.textContent = msg || ''; }
+      function enableUpload(b){ btnUpload.disabled = !b; }
+
+      fileInput.addEventListener('change', ()=>{
+        selectedFile = fileInput.files[0];
+        if (selectedFile){ setStatus(`Seleccionado: ${selectedFile.name}`); enableUpload(true); }
+      });
+
+      btnUpload.addEventListener('click', async ()=>{
+        if (!selectedFile){ setStatus('Selecciona un archivo.'); return; }
+        setStatus('Subiendo…'); btnUpload.disabled = true;
+        const fd = new FormData(); fd.append('file', selectedFile); fd.append('tipo', tipo);
+        try{
+          const r = await fetch('/api/upload_formulario', { method:'POST', body: fd });
+          const j = await r.json();
+          if (j.ok){
+            setStatus('✅ Archivo subido. Escribe **Continuar** para seguir.');
+            const b = document.createElement('button');
+            b.className = 'btn btn-link p-0 ms-2'; b.textContent = 'Continuar';
+            b.addEventListener('click', ()=>{ addMessage('Continuar','user'); sendMessage('Continuar'); });
+            status.after(b);
+          }else{
+            setStatus('Error: ' + (j.error || 'desconocido')); enableUpload(true);
+          }
+        }catch(e){
+          console.error(e); setStatus('Error de red al subir.'); enableUpload(true);
+        }
       });
     }
 
+    // ---------- Multiselección IDEC con tarjetas largas (option-button) ----------
+    function injectMultiSelectWidget(afterBubble, meta){
+      if (!afterBubble || !meta || !Array.isArray(meta.items)) return;
+
+      const w = document.createElement('div');
+      w.className = 'uploader'; // reutilizamos caja suave
+      let html = ``;
+      meta.items.forEach((txt)=>{
+        html += `<button type="button" class="option-button msel" data-val="${txt}" aria-pressed="false">${txt}</button>`;
+      });
+      html += `
+        <div class="mt-2 d-flex align-items-center gap-2">
+          <button class="btn btn-primary btn-sm btn-msel-confirm">${meta.submit_text || 'Confirmar'}</button>
+          <small class="text-muted msel-hint"></small>
+        </div>`;
+      w.innerHTML = html;
+      afterBubble.appendChild(w);
+
+      const buttons = Array.from(w.querySelectorAll('.option-button.msel'));
+      const hint    = w.querySelector('.msel-hint');
+      const btn     = w.querySelector('.btn-msel-confirm');
+
+      buttons.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          b.classList.toggle('active');
+          b.setAttribute('aria-pressed', b.classList.contains('active') ? 'true' : 'false');
+        });
+      });
+
+      btn.addEventListener('click', ()=>{
+        const selected = buttons.filter(b=>b.classList.contains('active')).map(b=>b.dataset.val);
+        if (!selected.length){ hint.textContent = 'Selecciona al menos una opción.'; return; }
+        addMessage('Seleccionados: ' + selected.join(', '), 'user');
+        sendMessage('__msel__:' + selected.join('|'));
+      });
+    }
+
+    // ---------- envío ----------
     async function sendMessage(msg) {
+      const endpoint = (mode === "alt") ? "/api/chat_alt" : "/api/chat";
+      const thinkingNode = showThinking(pendingText());
+      setSendingState(true);
+
       try {
-        const endpoint = (mode === "alt") ? "/api/chat_alt" : "/api/chat";
         const res = await fetch(endpoint, {
           method:"POST",
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({message:msg})
         });
         const data = await res.json();
+        if (typeof data.current_step === 'string') currentStep = data.current_step;
 
-        if (data.response) {
-          if (data.options && Array.isArray(data.options) && data.options.length) {
-            addOptionsMessage(data.response, data.options);
-          } else {
-            addMessage(data.response, 'bot');
-          }
+        const bubble = replaceThinking(thinkingNode, data.response || '...', data.options || null);
+
+        // Tarjetas IDEC (multiselección apilada)
+        if (data.multiselect && Array.isArray(data.multiselect.items)) {
+          injectMultiSelectWidget(bubble, data.multiselect);
         }
+
+        // Caja de subida cuando aplique
+        if (data.upload && data.upload.expect_upload){
+          injectUploadWidget(bubble, data.upload);
+        }
+
         if (msg.toLowerCase()==="finalizar" && mode==="alt") { mode="flow"; }
       } catch(err){
-        addMessage("❌ Error en el servidor","bot");
+        replaceThinking(thinkingNode, '❌ Ocurrió un error en el servidor. Intenta de nuevo.');
+        console.error(err);
+      } finally {
+        setSendingState(false);
       }
     }
 
+    // eventos básicos
     chatForm.addEventListener("submit",(e)=>{
       e.preventDefault();
       const msg=userInput.value.trim();
       if(!msg) return;
-      addMessage(msg,'user');
-      userInput.value="";
+      addMessage(msg,'user'); userInput.value="";
       sendMessage(msg);
     });
 
     document.getElementById("resetBtn").addEventListener("click", async ()=>{
       await fetch("/reset",{method:"POST"});
-      chatMessages.innerHTML="";
-      addMessage("🔄 Conversación reiniciada.","bot");
-      mode="flow";
+      chatMessages.innerHTML=""; addMessage("🔄 Conversación reiniciada.","bot");
+      mode="flow"; currentStep='intro_bienvenida';
       sendMessage("iniciar");
     });
 
     document.getElementById("altChatBtn").addEventListener("click", ()=>{
       mode="alt";
-      addMessage("🤖 Has activado el chat libre. Pregunta lo que quieras.\n\nEscribe **Finalizar** para volver al flujo.","bot");
+      addMessage("💬 Has activado el **Chat Libre**. Pregunta lo que quieras.\n\nEscribe **Finalizar** para volver al flujo.","bot");
     });
 
-    // iniciar conversación automáticamente
+    // inicio
     sendMessage("iniciar");
   </script>
 </body>
