@@ -21,6 +21,17 @@ from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_BREAK
 from openpyxl import load_workbook
+from datetime import datetime
+
+# Fecha actual
+fecha = datetime.now()
+meses = {
+    1: "enero", 2: "febrero", 3: "marzo", 4: "abril",
+    5: "mayo", 6: "junio", 7: "julio", 8: "agosto",
+    9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre"
+}
+fecha_actual = f"{fecha.day} de {meses[fecha.month]} de {fecha.year}"
+
 
 
 
@@ -215,34 +226,45 @@ def generate_project_document(
 
     # Prompt con orden de secciones fijo y sin códigos de IDs visibles
     prompt = (
-        "Eres un experto en formulación de proyectos bajo la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación en Colombia(DNP). Redacta en ESPAÑOL "
-        "y devuelve contenido en Markdown estructurado con #, ##, ### y #### (sin códigos C1/O1 visibles; "
-        "no uses paréntesis con IDs). El sistema convertirá luego a Word con títulos y viñetas.\n\n"
-        "ORDEN OBLIGATORIO DE SECCIONES:\n"
-        "## Introducción\n"
-        "## Planteamiento del problema u oportunidad\n"
-        "## Población afectada y objetivo\n"
-        "## Localización\n"
-        "## Marco del problema: Causas y efectos\n"
-        "## Marco de objetivos: Medios y fines\n"
-        "## Componentes del proyecto\n"
-        "## Cadena de valor\n"
-        "## Conclusión y justificación final\n\n"
-        "INSTRUCCIONES:\n"
-        "- Integra los datos del usuario y los árboles provistos a continuación.\n"
-        "- En 'Marco del problema: Causas y efectos': para cada causa, usa '### Causa' y un párrafo explicativo que conecte con la razón del proyecto; "
-        "luego '#### Efecto directo' con explicación; después '#### Causas indirectas' listadas (a), b), ...) y bajo cada una viñetas con 'Efecto indirecto: ...'. "
-        "No muestres códigos de IDs.\n"
-        "- En 'Marco de objetivos: Medios y fines': para cada objetivo, usa '### Objetivo' con explicación; "
-        "'#### Medio directo' y '#### Fin directo'; luego '#### Medios indirectos' listados (a), b), ...) y bajo cada uno viñetas con 'Fin indirecto: ...'. Sin códigos.\n"
-        "- En 'Componentes del proyecto' incluye los componentes seleccionados por el usuario si existen; enuméralos con viñetas y explica brevemente su papel.\n"
-        "- Mantén coherencia narrativa entre problema y objetivos, y cierra con una conclusión que justifique por qué el proyecto es sólido para recibir inversión.\n\n"
-        f"Datos del usuario (JSON):\n{json.dumps(clean, ensure_ascii=False, indent=2)}\n\n"
-        "Árbol de causas/efectos (outline):\n" + causas_outline + "\n\n"
-        "Árbol de objetivos/medios/fines (outline):\n" + objetivos_outline + "\n\n"
-        "RECUERDA: No incluyas códigos como C1, CI1, O1, MI1 en los títulos ni en el texto."
-        "verifica consistencia numérica, define términos confusos y resume hallazgos clave al final de la sección"
-    )
+    "Eres un experto en formulación de proyectos bajo la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación en Colombia (DNP). "
+    "Redacta en ESPAÑOL y devuelve el contenido en Markdown estructurado con #, ##, ### y #### (sin códigos C1/O1 visibles ni siglas sin desarrollar). "
+    "El sistema convertirá luego a Word con títulos y estilos formales.\n\n"
+    
+    "AL INICIO DEL DOCUMENTO, GENERA EL SIGUIENTE ENCABEZADO INSTITUCIONALCENTRADO:\n"
+    "**{entidad_responsable}**\n"
+    f"**{fecha_actual}**"
+    "\n\n"
+    
+    "ORDEN OBLIGATORIO DE SECCIONES (usa encabezados Markdown):\n"
+    "## Introducción\n"
+    "## Planteamiento del problema u oportunidad\n"
+    "## Población afectada y objetivo\n"
+    "## Localización\n"
+    "## Marco del problema: Causas y efectos\n"
+    "## Marco de objetivos: Medios y fines\n"
+    "## Componentes del proyecto\n"
+    "## Cadena de valor\n"
+    "## Conclusión y justificación final\n\n"
+    
+    "INSTRUCCIONES:\n"
+    "- Integra los datos del usuario y los árboles provistos.\n"
+    "- No uses siglas ni abreviaturas: escribe los nombres completos de las entidades (por ejemplo, 'Ministerio de Educación Nacional' en lugar de 'MinEducación').\n"
+    "- En 'Marco del problema: Causas y efectos': para cada causa, usa '### Causa' con una explicación; luego '#### Efecto directo' y '#### Causas indirectas'.\n"
+    "- En 'Marco de objetivos: Medios y fines': usa '### Objetivo', '#### Medio directo', '#### Fin directo' y '#### Medios indirectos'.\n"
+    "- En 'Componentes del proyecto' enumera los componentes seleccionados por el usuario y explica brevemente su papel.\n"
+    "- Mantén coherencia narrativa entre el problema y los objetivos, y finaliza con una conclusión justificativa del proyecto.\n\n"
+    "FORMATO:\n"
+    "- El título principal y los datos de encabezado deben ir centrados.\n"
+    "- Todo el cuerpo del texto debe estar con alineación justificada.\n\n"
+
+    f"Datos del usuario (JSON):\n{json.dumps(clean, ensure_ascii=False, indent=2)}\n\n"
+    "Árbol de causas/efectos (outline):\n" + causas_outline + "\n\n"
+    "Árbol de objetivos/medios/fines (outline):\n" + objetivos_outline + "\n\n"
+    "RECUERDA: No incluyas códigos como C1, CI1, O1, MI1 en los títulos ni en el texto. "
+    "Verifica consistencia numérica, define términos confusos y resume los hallazgos clave al final."
+    "En caso de que no te den algunos datos, pero lo puedas conseguir en internet colocalos y referencialos. Por ejemplo, la cantidad de habitantes de alguna zona, si te dan especificaciones de dónde está la pobklación y quiénes son, puedes buscar en tu base de datos o en internet para averiguar qué numero puede ser, estimandolo"
+)
+
 
     completion = client.chat.completions.create(
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
@@ -629,11 +651,15 @@ conversation_flow = {
         "next_step": "pregunta_3_entidad"
     },
 
-    "pregunta_3_entidad": {"prompt": "🏢 ¿Cuál es el nombre de tu entidad?", "next_step": "rol_abierto"},
-    "rol_abierto": {
-        "prompt": "👤 ¿Cuál es su rol dentro de la entidad (por ejemplo: Director de área, Coordinador, Profesional especializado, Analista, Asesor, Técnico operativo, Contratista de apoyo)?",
+    "pregunta_3_entidad": {
+        "prompt": "🏢 ¿Cuál es el nombre de tu entidad?", 
         "next_step": "elige_vertical"
     },
+
+    #"rol_abierto": {
+    #    "prompt": "👤 ¿Cuál es su rol dentro de la entidad (por ejemplo: Director de área, Coordinador, Profesional especializado, Analista, Asesor, Técnico operativo, Contratista de apoyo)?",
+    #    "next_step": "elige_vertical"
+    #},
 
     "elige_vertical": {
         "prompt": "💡 ¿Deseas construir un proyecto de inversión asociando componentes de tecnologías de la información y las comunicaciones en temas de Infraestructura de datos (IDEC) o Inteligencia Artificial (IA)?",
