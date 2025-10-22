@@ -1,8 +1,8 @@
 
 # app.py
-from flask import Flask, render_template, request, jsonify, session, send_from_directory, url_for
+from flask import send_file, Flask, render_template, request, jsonify, session, send_from_directory, url_for
 from flask_cors import CORS
-import os, logging, re, httpx
+import os, logging, re, httpx, io, zipfile
 from dotenv import load_dotenv
 from openai import AzureOpenAI
 
@@ -48,6 +48,27 @@ def index():
     session['mode'] = 'flow'
     return render_template('index.html')
 
+@app.route('/download_templates')
+def download_templates():
+    # Ruta a las plantillas de Excel
+    templates_folder = os.path.join(os.getcwd(), "plantillas_excel")
+
+    # Crear ZIP en memoria
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, _, files in os.walk(templates_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                zf.write(file_path, os.path.relpath(file_path, templates_folder))
+    memory_file.seek(0)
+
+    return send_file(
+        memory_file,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name='plantillas_excel.zip'
+    )
+
 @app.route('/download/<path:filename>')
 def download_file(filename):
     try:
@@ -58,7 +79,7 @@ def download_file(filename):
 
 @app.route('/plantilla/<tipo>')
 def plantilla(tipo):
-    fname = 'PlantillaCausa.xlsx' if tipo == 'causa' else 'PlantillaObjetivo.xlsx' if tipo == 'objetivo' else None
+    fname = 'plantillas_excel/PlantillaCausa.xlsx' if tipo == 'causa' else 'plantillas_excel/PlantillaObjetivo.xlsx' if tipo == 'objetivo' else None
     if not fname: return "Tipo inválido", 400
     path = os.path.join(BASE_DIR, fname)
     if not os.path.isfile(path): return "Plantilla no encontrada", 404
@@ -165,10 +186,10 @@ def chat_alt():
 def _upload_prompt_with_link(step_key: str) -> str:
     if step_key == 'upload_causas':
         url = url_for('plantilla', tipo='causa')
-        return f"**Cargar plantilla de causas.**\n\n1. Descargue la plantilla.\n2. Diligénciela.\n3. Súbala en el recuadro que aparece debajo.\n\n**Descargar plantilla:** [PlantillaCausa.xlsx]({url})"
+        return f"**Cargar plantilla de causas.**\n\n1. Descargue las plantillas en la parte superior del chat.\n2. Seleccione la **PlantillaCausa.xlsx**.\n3. Diligénciela.\n4. Súbala en el recuadro que aparece debajo.\n\n"
     else:
         url = url_for('plantilla', tipo='objetivo')
-        return f"**Cargar plantilla de objetivos.**\n\n1. Descargue la plantilla.\n2. Diligénciela.\n3. Súbala en el recuadro que aparece debajo.\n\n**Descargar plantilla:** [PlantillaObjetivo.xlsx]({url})"
+        return f"**Cargar plantilla de objetivos.**\n\n1. Descargue las plantillas en la parte superior del chat.\n2. Seleccione la **PlantillaObjetivo.xlsx**.\n3. Diligénciela.\n4. Súbala en el recuadro que aparece debajo.\n\n"
 
 @app.route('/api/chat', methods=['POST'])
 def chat():

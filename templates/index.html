@@ -54,6 +54,7 @@
           <small>Proyectos TIC</small>
         </div>
         <div>
+          <button id="downloadTemplatesBtn" class="btn btn-success btn-sm">⬇️ Descargar Plantillas</button>
           <button id="altChatBtn" class="btn btn-warning btn-sm">💬 Chat Libre</button>
           <button id="resetBtn" class="btn btn-danger btn-sm">🔄 Reiniciar</button>
         </div>
@@ -286,6 +287,25 @@
     document.getElementById("altChatBtn").addEventListener("click", ()=>{
       mode="alt";
       addMessage("💬 Has activado el **Chat Libre**. Pregunta lo que quieras.\n\nEscribe **Finalizar** para volver al flujo.","bot");
+    });
+    
+    document.getElementById("downloadTemplatesBtn").addEventListener("click", async () => {
+      try {
+        const response = await fetch("/download_templates");
+        if (!response.ok) throw new Error("Error al descargar ZIP");
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "plantillas_excel.zip";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        alert("No se pudo descargar el archivo.");
+        console.error(error);
+      }
     });
 
     // inicio
