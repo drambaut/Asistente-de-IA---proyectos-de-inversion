@@ -55,6 +55,7 @@
         </div>
         <div>
           <button id="downloadTemplatesBtn" class="btn btn-success btn-sm">⬇️ Descargar Plantillas</button>
+          <button id="downloadManualBtn" class="btn btn-info btn-sm">📖 Manual de Uso</button>
           <button id="altChatBtn" class="btn btn-warning btn-sm">💬 Chat Libre</button>
           <button id="resetBtn" class="btn btn-danger btn-sm">🔄 Reiniciar</button>
         </div>
@@ -304,6 +305,25 @@
         window.URL.revokeObjectURL(url);
       } catch (error) {
         alert("No se pudo descargar el archivo.");
+        console.error(error);
+      }
+    });
+
+    document.getElementById("downloadManualBtn").addEventListener("click", async () => {
+      try {
+        const response = await fetch("/download_manual");
+        if (!response.ok) throw new Error("Error al descargar manual");
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "manual_de_uso.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        alert("No se pudo descargar el manual.");
         console.error(error);
       }
     });

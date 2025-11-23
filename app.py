@@ -69,6 +69,47 @@ def download_templates():
         download_name='plantillas_excel.zip'
     )
 
+@app.route('/download_manual')
+def download_manual():
+    # Buscar manual en diferentes ubicaciones y formatos
+    possible_names = [
+        'manual_de_uso.pdf',
+        'manual_de_uso.docx',
+        'Manual_de_Uso.pdf',
+        'Manual_de_Uso.docx',
+        'manual.pdf',
+        'Manual.pdf'
+    ]
+    
+    # Buscar en static/documents y en static
+    search_paths = [
+        DOCUMENTS_DIR,
+        app.static_folder
+    ]
+    
+    for search_path in search_paths:
+        for name in possible_names:
+            manual_path = os.path.join(search_path, name)
+            if os.path.isfile(manual_path):
+                # Determinar mimetype basado en extensión
+                if name.endswith('.pdf'):
+                    mimetype = 'application/pdf'
+                elif name.endswith('.docx'):
+                    mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                else:
+                    mimetype = 'application/octet-stream'
+                
+                return send_file(
+                    manual_path,
+                    mimetype=mimetype,
+                    as_attachment=True,
+                    download_name='manual_de_uso.pdf' if name.endswith('.pdf') else 'manual_de_uso.docx'
+                )
+    
+    # Si no se encuentra, devolver error
+    logger.warning("Manual de uso no encontrado")
+    return "Manual de uso no disponible", 404
+
 @app.route('/download/<path:filename>')
 def download_file(filename):
     try:
