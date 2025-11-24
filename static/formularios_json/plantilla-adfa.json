@@ -1,0 +1,1598 @@
+﻿{
+  "IDEC-1-Gobernanza": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Insuficiente marco institucional para la gestión integral del ciclo de vida de los datos.",
+          "efecto_directo": {
+            "descripcion": "Desconocimiento de normativas claras en la definición de roles y responsabilidades en la gestión de datos."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Desactualización de políticas, lineamientos y procedimientos de gestión de datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Poca adopción de mecanismos en la evaluación y actualización periódica de los instrumentos de gestión de datos.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Limitadas capacidades técnicas y estratégicas en la gestión y gobernanza de datos.",
+          "efecto_directo": {
+            "descripcion": "Dispersión de habilidades y capacidades en la innovación en el uso y aprovechamiento de datos."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Baja asignación de recursos tecnológicos y presupuestales en el fortalecimiento de capacidades técnicas y talento humano.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Escasa formación especializada en gestión de datos e interoperabilidad en las áreas responsables.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Débil articulación entre las áreas técnicas, misionales y de planeación institucional.",
+          "efecto_directo": {
+            "descripcion": "Deficiente comunicación entre áreas que dificulta la coordinación en la gobernanza de los datos."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Poca efectividad en los canales de coordinación institucional en la gestión de datos compartidos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Débil liderazgo en la integración de  los datos en la toma de decisiones.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Promover una cultura organizacional orientada al uso estratégico de los datos.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Fomentar programas de formación, e identificación de necesidades técnicas.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Impulsar mecanismos de coordinación institucional.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IDEC-2-Herram_TecyTec": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Baja identificación y funcionalidad de las herramientas tecnológicas institucionales disponibles en gestión de datos de calidad.",
+          "efecto_directo": {
+            "descripcion": "Barreras operativas en la gestión de los datos por el uso de herramientas obsoletas, no escalables y sin soporte técnico."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Identificación insuficiente de necesidades tecnológicas requeridas en el funcionamiento del ciclo de vida de los datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Limitada disponibilidad de procesos y politicas en la definición y evaluación de herramientas tecnológicas.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Limitadas capacidades técnicas y tecnológicas para la gestión, uso e intercambio de datos",
+          "efecto_directo": {
+            "descripcion": "Discontinuidad en los procesos de gestión de datos por la falta de capacidades técnicas en la operación  y adopción de soluciones tecnológicas."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Disponibilidad limitada de herramientas que fortalezcan el análisis y uso estratégico de los datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Bajo nivel de madurez e integración en los procesos de mantenimiento y soporte de los sistemas de información, infraestructura tecnológica y mecanismos de intercambio de datos.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Débil planificación institucional y presupuestal en la adquisición, actualización y mantenimiento de herramientas tecnológicas.",
+          "efecto_directo": {
+            "descripcion": "Rezago en la modernización tecnológica y en la consolidación de una gestión pública basada en datos."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Escaso análisis de costo-beneficio  de herramientas tecnicas y tecnológicas  que apoyan  a  la toma de decisiones.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Baja adopción de  procesos institucionales  en la evaluación y priorización de soluciones tecnológicas.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Establecer mecanismos orientados a la identificación de necesidades tecnológicas y a la definición de políticas y procesos de adopción y evaluación.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Implementar programas de fortalecimiento de competencias técnicas para el uso y gestión de herramientas tecnológicas.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Impulsar procesos de mantenimiento, actualización y soporte continuo de la infraestructura tecnológica institucional.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IDEC-3-Interoperabilidad": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Bajo nivel de cultura organizacional y gestión de cambio para la adopción de procesos de intercambio de datos.",
+          "efecto_directo": {
+            "descripcion": "Limitada disponibilidad de datos estandarizados y de calidad que respalden la toma de decisiones y la prestación de servicios al ciudadano."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Bajo entendimiento por parte de los directivos de la entidad sobre la importancia de la interoperabilidad de datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Resistencia al cambio organizacional para la adopción de mecanismos de información e interoperabilidad.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Bajo niveles de talento humano para la adopción de estándares y lineamientos de inteoperabilidad en la entidad pública.",
+          "efecto_directo": {
+            "descripcion": "Limitaciones para la integración y reutilización eficiente de datos entre sistemas internos y con entidades externas."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Rezago de habilidades y conocimientos del talento humano en relación con procesos, semánticas, normatividad y modelos tecnológicos requeridos para el desarrollo de la interoperabilidad.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Bajos niveles de formación y capacitación para el fortalecimiento de capacidades de talento humano relacionadas con interoperabilidad.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Capacidad tecnológica limitada para implementar estándares y desarrollar mecanismos de intercambio de información e interoperabilidad.",
+          "efecto_directo": {
+            "descripcion": "Inefiencia operativa y administrativa en la entidad pública."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Debilidad en las políticas y mecanismos de renovación tecnológica que genera obsolescencia en los sistemas de información y los mecanismos de intercambio de datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Baja de integración de las tecnologías digitales encargadas del procesamiento e intercambio de datos.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Fomentar una cultura de gestión de cambio organizacional en equipos técnicos y directivos de la entidad.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Desarrollar programas de formación y capacitación del talento humano relacionado con lineamientos y guías de inteoperabilidad.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Desarrollar políticas y mecanismos de renovación e integración tecnológica para el intercambio de datos.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IDEC-4-Seguridad y privacidad": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Debilidad en las políticas de preservación, seguridad y privacidad de la información.",
+          "efecto_directo": {
+            "descripcion": "Pérdida de confianza por parte de ciudadanos y usuarios frente al uso institucional de sus datos personales."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Escasa cultura e implementación de una estrategia de seguridad y privacidad de los datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Limitada articulación institucional en la aplicación de políticas de seguridad y privacidad de los datos.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Limitada implementación de lineamientos de seguridad y privacidad de los datos.",
+          "efecto_directo": {
+            "descripcion": "Aumento de la exposición a brechas de seguridad y filtraciones de información sensible."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Baja identificación de mecanismos de aseguramiento en la confidencialidad, privacidad y seguridad en el ciclo de vida de los datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Deficiente implementación de controles de seguridad técnicos y organizacionales sobre la gestión de datos.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Deficiente capacidad de respuesta y manejo ante incidentes de seguridad informática y vulneraciones de datos.",
+          "efecto_directo": {
+            "descripcion": "Aumento de riesgos en la manipulación, pérdida o uso indebido de información crítica y datos gestionados."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Baja capacidad institucional en adopción de procesos y procedimientos de gestión de información crítica.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Baja capacidad en cumplimiento de protocolos de respuesta a incidentes de seguridad sobre la gestión de los datos.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Fortalecer la cultura institucional en gestión de seguridad y privacidad de los datos para el desarrollo de una estrategia integral.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Elaborar y adoptar lineamientos en seguridad y privacidad de los datos en la entidad pública.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Fortalecer la gestión institucional en seguridad, privacidad, y capacidad de respuesta ante incidentes de datos.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IDEC-5-Datos": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Debilidad en el modelo de gobierno de datos que integre, actualice y disponga datos de calidad.",
+          "efecto_directo": {
+            "descripcion": "Ineficiencia en la formulación y seguimiento de políticas públicas."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Debilidad en la cultura de datos en la entidad pública que afecta la definición de estrategias y políticas de gobierno de datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Debilidad del marco normativo e institucional interno que defina responsabilidades, flujos de trabajo ni estándares de calidad.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Limitada capacidad técnica y humana para identificar, gestionar, disponer y aprovechar los datos en la entidad pública.",
+          "efecto_directo": {
+            "descripcion": "Inconsistencia en la calidad de los datos generados por la entidad pública."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Bajo nivel de inversión en formación y fortalecimiento del talento humano para gestionar y disponer los datos en la entidad pública.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Los equipos no están sensibilizados sobre la importancia de producir y usar datos de calidad.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Falta de adopción de lineamientos normativos y técnicos sobre la calidad de los datos.",
+          "efecto_directo": {
+            "descripcion": "Dificultad para tomar decisiones oportunas basadas en datos."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Falta de mecanismos de seguimiento al cumplimiento de estándares de calidad.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Debilidad en la coordinación entre areas misionales y estratégicas de la entidad que dificulta la homogeneización de prácticas y adopción de lineamientos.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C4",
+          "descripcion": "Debilidad en procesos automatizados y estandarizados para la gestión del ciclo de vida de los datos.",
+          "efecto_directo": {
+            "descripcion": "Desarticulación entre áreas misionales y estratégicas en la gestión y uso de la información en la entidad pública."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C4CI1",
+              "descripcion": "Insuficiencia de recursos suficientes para actualizar plataformas y desarrollar soluciones de automatización.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C4CI2",
+              "descripcion": "Bajo soporte de automatización y bajos flujos integrados para gestionar datos de forma continua.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Fortalecer la cultura institucional de datos para promover prácticas sostenibles de gestión y asegurar la calidad, disponibilidad y uso estratégico de la información.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Aumentar la formación y fortalecimiento del talento humano para gestionar y disponer los datos en la entidad pública.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Definir mecanismos de seguimiento al cumplimiento de estándares de calidad.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O4",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O4MI1",
+              "descripcion": "Definir estrategias para la adopción de tecnologías innovadoras para la calidad y gobernanza de datos.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IDEC-6-Aprovechamiento_de_datos": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Baja cultura de datos en la entidad pública para tomar decisiones estratégicas, operativas y misionales basadas en los datos.",
+          "efecto_directo": {
+            "descripcion": "Disminución de la confianza ciudadana en el desarrollo e implementación de iniciativas gubernamentales basadas en datos."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Insuficiente liderazgo institucional y falta de una visión estratégica que reconozca el valor de los datos para la gestión y la toma de decisiones.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Inadecuada definición de una estrategia institucional para el uso y aprovechamiento de los datos.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Escasa planificación de ejercicios de innovación basados en datos.",
+          "efecto_directo": {
+            "descripcion": "Baja efectividad en aplicación de políticas y soluciones innovadoras públicas en la entidad."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Deficiente identificación y aprovechamiento de las fuentes de datos disponibles en la entidad pública.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Limitada implementación y sistematización de casos de uso de datos dentro de los procesos institucionales.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Escaso desarrollo y utilización de modelos de analítica de datos, inteligencia artificial y tecnologías 4.0.",
+          "efecto_directo": {
+            "descripcion": "Rezago institucional y de capacidades en innovación y adopción tecnológica."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Limitada comprensión e implementación práctica de sistemas de inteligencia artificial basados en enfoques tecnológicos y de aprendizaje automático.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Debilidad en la definición de procedimientos y políticas asociadas al desarrollo de soluciones tecnológicas basadas en datos de los modelos de analítica de datos, inteligencia artificial y tecnologías 4.0.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Fortalecer el liderazgo institucional con visión estratégica sobre el valor, uso y aprovechamiento de los datos como activo estratégico en la entidad pública.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Mejorar la calidad, disponibilidad y accesibilidad de los datos relevantes en la innovación y la generación de soluciones públicas.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Desarrollar capacidades técnicas y operativas para la gestión, integración y uso eficiente de la infraestructura informática y de datos en el desarrollo de soluciones basadas en IA.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IA-1-ChipSet": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Baja capacidad para procesamiento de modelos de aprendizaje automático.",
+          "efecto_directo": {
+            "descripcion": "Retrasos en los ciclos de experimentación y despliegue."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Limitada asignación presupuestal y lineamientos estratégicos desalineados que prioricen la inversión en hardware especializado (GPU/TPU).",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Bajas alianzas estratégicas con universidades, centros de supercómputo o proveedores cloud que permitan acceso compartido a infraestructura de alto rendimiento.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Baja disponibilidad de dispositivos de recolección y procesamiento de información (p.e. sensores y dispositivos IoT).",
+          "efecto_directo": {
+            "descripcion": "Limitación en la complejidad y escala de los modelos implementables."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Insuficiente estandarización institucional y carencia de políticas adoptadas para despliegues IoT y edge computing.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Dependencia de esquemas de adquisición centralizados y lentos que dificultan la renovación tecnológica o la adopción de soluciones IoT emergentes.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Baja capacidad de Hardware de infraestructura general (p.e. servidores y datacenters, soluciones de almacenamiento local, equipos de configuración de redes, entre otros).",
+          "efecto_directo": {
+            "descripcion": null
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Rígidos  y prolongados procesos de adquisición y renovación tecnológica.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Inadecuada definición de políticas institucionales de sostenilidad tecnológica y planificación de actualización de la infraestructura tecnológica.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Organizar y compartir capacidad de cómputo entre entidades públicas.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Estandarizar y agilizar la adquisición de dispositivos de captura compatibles con IA.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Implementar un ciclo continuo de renovación de infraestructura con contratación ágil.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IA-2-Productos": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Insuficiente disponibilidad de dispositivos y/o servicios especializados de captura de datos.",
+          "efecto_directo": {
+            "descripcion": "Modelos de IA con baja precisión y confiabilidad."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Insuficiente planeación estratégica de infraestructura de datos y débil análisis de retorno de la inversión.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Deficientes condiciones operativas y logísticas (baja energía/conectividad en campo, ambientes hostiles, costos de mantenimiento) que encarecen y retrasan el despliegue de dispositivos y/o servicios.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Fragmentación de procesos de pre-procesamiento manuales.",
+          "efecto_directo": {
+            "descripcion": "Demoras y sobrecostos en la puesta en marcha de proyectos de analítica e IA."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Baja adopción de una política institucional de gobernanza y estandarización de datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Déficit de herramientas y perfiles de ingeniería de datos que impiden automatizar y estandarizar transformaciones.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Limitada conectividad e interoperabilidad entre fuentes de datos.",
+          "efecto_directo": {
+            "descripcion": null
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Dependencia de sistemas legados y estándares propietarios sin una estrategia de integración institucional.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Restricciones de seguridad y cumplimiento (protección de datos, falta de acuerdos de intercambio y evaluaciones de impacto) que limitan el intercambio y la exposición de APIs/servicios.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Generar condiciones necesarias para una adecuada operación en campo resiliente para la captura de datos",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Consolidar una plataforma corporativa de ingeniería de datos y fortalecer el talento interno.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Establecer un marco de intercambio de datos seguro y conforme a políticas de minimización y retención.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IA-3-Entrenamiento": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Insuficiente infraestructura tecnológica y adecuación/disponibilidad de datos para el entrenamiento de modelos de IA.",
+          "efecto_directo": {
+            "descripcion": "Escasa implementación de soluciones inteligentes para mejorar la eficiencia, calidad y/o cobertura de los procesos misionales."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Priorización y asignación presupuestal desalineadas para la modernización de hardware y la gobernanza de datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Restricciones internas para el uso de nube y políticas de acceso y compartición de datos insuficientemente definidas (catálogos, metadatos, convenios).",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Débil capacidad técnica en modelos fundacionales, personalización, bibliotecas y marcos de desarrollo de IA aplicada al desarrollo de modelos de IA.",
+          "efecto_directo": {
+            "descripcion": "Bajo aprovechamiento de la inteligencia artificial en la gestión de políticas públicas y toma de decisiones basadas en evidencia."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Insuficiencia de salarios y planes de formación para atraer y retener talento especializado.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Baja exposición a proyectos reales, cargas operativas que limitan tiempo para I+D,  y escasas alianzas con academia e industria.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Baja integración de procesos institucionales con el desarrollo de modelos de IA.",
+          "efecto_directo": {
+            "descripcion": null
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Deficiente estructura organizacional y de marco de gobernanza transversal.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Incentivos e indicadores no alineados con la adopción de IA, y ausencia de una PMO/Data Office que oriente la integración transversal.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Establecer una política de nube/híbrida y un marco de gestión de datos que permita acceso ágil y seguro a cómputo y datasets para entrenar modelos.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Lanzar alianzas con academia/industria y un esquema de tiempo protegido para I+D que aumente la exposición del equipo a casos reales y tecnologías de punta.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Alinear incentivos e indicadores con la adopción de IA, en conjunto con la instalación de una PMO/Data Office.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IA-4-Ejecución": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Inadecuada Infraestructura tecnológica para la puesta en producción de modelos.",
+          "efecto_directo": {
+            "descripcion": "Bajo aprovechamiento de modelos de IA entrenados, generando pérdidas en inversión y oportunidades de innovación pública."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Concentración de inversión de TI en sistemas heredados, sin planeación para entornos productivos escalables de IA.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Desactualizada arquitectura y alta deuda técnica que dificultan contenedorización, microservicios y escalado para inferencia.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Limitada preparación de procesos institucionales en la integración de modelos en la operación o la prestación del servicio.",
+          "efecto_directo": {
+            "descripcion": "Riesgos reputacionales, técnicos y éticos por la implementación inadecuada de modelos de IA."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Baja operatividad de gestión del cambio y prácticas DevOps/MLOps que vinculen áreas misionales y de TI.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Baja disponibilidad de entornos UAT/sandbox y prácticas de validación (A/B, pruebas con datos sintéticos) para incorporar modelos con bajo riesgo.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Bajas capacidades técnicas y operativas para mantener y adaptar modelos en entornos reales.",
+          "efecto_directo": {
+            "descripcion": null
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Exclusión de planes de formación y carrera en perfiles de operación y monitoreo de IA (MLOps).",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Alta rotación y dependencia de proveedores sin transferencia de conocimiento.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Modernizar la arquitectura hacia microservicios y contenedores.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Implantar entornos UAT/sandbox y un marco de validación controlada.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Consolidar un equipo interno de MLOps con transferencia de conocimiento obligatoria.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IA-5-Aplicaciones": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Procesos misionales y administrativos altamente manuales y fragmentados.",
+          "efecto_directo": {
+            "descripcion": "Aumento de costos operativos y sobrecarga de personal."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Escasa automatización de tareas repetitivas, validaciones y toma de decisiones basadas en datos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Normativa/procedimientos internos desactualizados con controles manuales obligatorios.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Infraestructura y datos insuficientes para soluciones de IA.",
+          "efecto_directo": {
+            "descripcion": "Baja satisfacción de usuarios internos y externos, con pérdida de confianza institucional."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Información dispersa, problemas de calidad y falta de interoperabilidad.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Restricciones de residencia/seguridad de datos sin lineamientos claros para nube e interoperabilidad.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Déficit de capacidades técnicas y de gobernanza en IA.",
+          "efecto_directo": {
+            "descripcion": null
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Escasez de perfiles con experiencia en ciencia de datos, IA y ética algorítmica.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Sobrecarga operativa y tiempo insuficiente para formación y mejora continua.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Actualizar normativa interna y rediseñar procesos “end-to-end” digitales.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Definir lineamientos de residencia/seguridad de datos y un marco de interoperabilidad en nube.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Establecer cronogramas y una ruta de formación/gobernanza en IA.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IA-6-Servicios": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Oferta insuficiente de proveedores locales con servicios de IA sectoriales orientados al ámbito público.",
+          "efecto_directo": {
+            "descripcion": "Persistencia de brechas de eficiencia y calidad en los servicios públicos."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Baja inversión pública–privada en I+D y escasos incentivos fiscales para empresas que desarrollan soluciones de IA para el Estado.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Demanda pública fragmentada e impredecible, sin hojas de ruta ni catálogos de casos de uso sectoriales.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Mecanismos de vinculación y contratación poco ágiles para servicios de IA.",
+          "efecto_directo": {
+            "descripcion": "Oportunidades perdidas de innovación y competitividad digital a nivel nacional."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Marcos regulatorios y procesos de control fiscal rígidos.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Baja disponibilidad de lineamientos sobre propiedad intelectual y uso de datos en la contratación de servicios de IA (licencias, derechos sobre modelos y datasets).",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Baja madurez interna en datos, talento y gobernanza para absorber servicios de IA.",
+          "efecto_directo": {
+            "descripcion": null
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Carencia de equipos capaces de definir requerimientos, evaluar propuestas técnicas y operar modelos suministrados por terceros.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Ausencia de presupuesto operativo recurrente y plan plurianual de capacidades.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Agrear y estabilizar la demanda pública de IA mediante hojas de ruta y catálogos sectoriales.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Estandarizar lineamientos sobre propiedad intelectual y uso de datos en la contratación de servicios de IA.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Consolidar un esquema presupuestal plurianual operativo para capacidades de IA.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "IA-7-Gobernanza": {
+    "causas": {
+      "tipo": "causas",
+      "items": [
+        {
+          "id": "C1",
+          "descripcion": "Escasa planificación estratégica para la adopción ética, segura y responsable de IA.",
+          "efecto_directo": {
+            "descripcion": "Mayor exposición institucional a riesgos éticos, técnicos y legales asociados al uso de inteligencia artificial."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C1CI1",
+              "descripcion": "Bajos niveles de cultura de datos sobre la importancia de invertir en software de monitoreo y auditoría algorítmica.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C1CI2",
+              "descripcion": "Baja asignación de recursos técnicos y financieros para fortalecer capacidades en IA y su supervisión.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "descripcion": "Limitada coordinación interinstitucional entre dependencias de la entidad en el desarrollo, supervisión y adopción de modelos de IA.",
+          "efecto_directo": {
+            "descripcion": "Baja confianza en el uso de IA en el sector público y limitada legitimidad de las decisiones automatizadas."
+          },
+          "causas_indirectas": [
+            {
+              "id": "C2CI1",
+              "descripcion": "Falta de lineamientos regulatorios claros y escasa adopción de buenas prácticas internacionales en la materia.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C2CI2",
+              "descripcion": "Ausencia de lineamientos e buenas prácticas sectoriales claras.",
+              "efectos_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "descripcion": "Falta de procesos y roles definidos para la gestión, supervisión, y auditoria de modelos de IA.",
+          "efecto_directo": {
+            "descripcion": null
+          },
+          "causas_indirectas": [
+            {
+              "id": "C3CI1",
+              "descripcion": "Cultura organizacional conservadora y ausencia de políticas internas que asignen responsabilidades y flujos de trabajo para IA.",
+              "efectos_indirectos": []
+            },
+            {
+              "id": "C3CI2",
+              "descripcion": "Lineamientos estratégicos poco claros y ausencia de rendición de cuentas de modelos de IA.",
+              "efectos_indirectos": []
+            }
+          ]
+        }
+      ]
+    },
+    "objetivos": {
+      "tipo": "objetivos",
+      "items": [
+        {
+          "id": "O1",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O1MI1",
+              "descripcion": "Estandarizar especificaciones y casos de uso para adquirir herramientas de gobernanza de IA.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O2",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O2MI1",
+              "descripcion": "Formalizar lineamientos y buenas prácticas sectoriales de gobernanza de IA.",
+              "fines_indirectos": []
+            }
+          ]
+        },
+        {
+          "id": "O3",
+          "descripcion": null,
+          "medio_directo": {
+            "descripcion": null
+          },
+          "fin_directo": {
+            "descripcion": null
+          },
+          "medios_indirectos": [
+            {
+              "id": "O3MI1",
+              "descripcion": "Establecer e implementar herramientas de principios éticos para modelos de IA.",
+              "fines_indirectos": []
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

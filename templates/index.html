@@ -293,12 +293,22 @@
     document.getElementById("downloadTemplatesBtn").addEventListener("click", async () => {
       try {
         const response = await fetch("/download_templates");
-        if (!response.ok) throw new Error("Error al descargar ZIP");
+        if (!response.ok) throw new Error("Error al descargar plantilla");
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "plantillas_excel.zip";
+        
+        // Obtener el nombre del archivo del header Content-Disposition
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let filename = "plantillas_excel.zip"; // valor por defecto
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         a.remove();

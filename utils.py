@@ -22,6 +22,7 @@ from docx.shared import Pt
 from docx.enum.text import WD_BREAK
 from openpyxl import load_workbook
 from datetime import datetime
+import pandas as pd
 
 # Fecha actual
 fecha = datetime.now()
@@ -84,18 +85,26 @@ def ask_markdown_azure(
 
 # -------------------------- DOCX helpers --------------------------
 def _add_rich_text(paragraph, text: str) -> None:
-    """Aplica **negrita**, *itálica* y `monoespaciado` simple dentro de un párrafo."""
+    """Aplica **negrita**, *itálica*, `monoespaciado` y [enlaces](url) simple dentro de un párrafo."""
+    # Procesar enlaces primero: [texto](url) -> texto (url)
+    text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'\1 (\2)', text)
+    
+    # Procesar texto con negrita, itálica y monoespaciado
     token_re = re.compile(r'(\*\*.+?\*\*|\*.+?\*|`.+?`)')
     parts = token_re.split(text)
     for part in parts:
         if not part:
             continue
         if part.startswith("**") and part.endswith("**"):
-            run = paragraph.add_run(part[2:-2]); run.bold = True
+            run = paragraph.add_run(part[2:-2])
+            run.bold = True
         elif part.startswith("*") and part.endswith("*"):
-            run = paragraph.add_run(part[1:-1]); run.italic = True
+            run = paragraph.add_run(part[1:-1])
+            run.italic = True
         elif part.startswith("`") and part.endswith("`"):
-            run = paragraph.add_run(part[1:-1]); run.font.name = "Courier New"; run.font.size = Pt(10)
+            run = paragraph.add_run(part[1:-1])
+            run.font.name = "Courier New"
+            run.font.size = Pt(10)
         else:
             paragraph.add_run(part)
 
@@ -213,12 +222,30 @@ def generate_project_document(
 
     # Cargar árboles desde disco si no vienen en memoria
     if formularios_json_dir:
-        if causas_tree is None and responses.get("upload_causa"):
-            base = os.path.splitext(responses["upload_causa"])[0]  # sin .xlsx
-            causas_tree = load_tree_json(os.path.join(formularios_json_dir, f"{base}.json"))
-        if objetivos_tree is None and responses.get("upload_objetivo"):
-            base = os.path.splitext(responses["upload_objetivo"])[0]
-            objetivos_tree = load_tree_json(os.path.join(formularios_json_dir, f"{base}.json"))
+        # Para plantilla general, buscar archivo JSON único que contiene todo
+        if causas_tree is None or objetivos_tree is None:
+            if responses.get("upload_plantilla"):
+                # El archivo JSON tiene el mismo nombre base que el Excel pero con extensión .json
+                # Ejemplo: plantilla-mi-proyecto.xlsx -> plantilla-mi-proyecto.json
+                base_plantilla = os.path.splitext(responses["upload_plantilla"])[0]  # sin .xlsx
+                json_path = os.path.join(formularios_json_dir, f"{base_plantilla}.json")
+                if os.path.exists(json_path):
+                    # El JSON contiene todas las hojas con causas y objetivos
+                    tree_data = load_tree_json(json_path)
+                    if tree_data:
+                        # Usar el mismo árbol para causas y objetivos (contiene todo)
+                        if causas_tree is None:
+                            causas_tree = tree_data
+                        if objetivos_tree is None:
+                            objetivos_tree = tree_data
+            elif responses.get("upload_causa"):
+                base = os.path.splitext(responses["upload_causa"])[0]  # sin .xlsx
+                if causas_tree is None:
+                    causas_tree = load_tree_json(os.path.join(formularios_json_dir, f"{base}.json"))
+            elif responses.get("upload_objetivo"):
+                base = os.path.splitext(responses["upload_objetivo"])[0]
+                if objetivos_tree is None:
+                    objetivos_tree = load_tree_json(os.path.join(formularios_json_dir, f"{base}.json"))
 
     clean = _filtered_responses_for_report(responses)
     causas_outline = causas_tree_to_outline(causas_tree) if causas_tree else "(sin causas)"
@@ -231,14 +258,12 @@ def generate_project_document(
     "El sistema convertirá luego a Word con títulos y estilos formales.\n\n"
     
     "AL INICIO DEL DOCUMENTO, GENERA EL SIGUIENTE ENCABEZADO INSTITUCIONALCENTRADO:\n"
-    "**{entidad_responsable}**\n"
     f"**{fecha_actual}**"
     "\n\n"
     
     "ORDEN OBLIGATORIO DE SECCIONES (usa encabezados Markdown):\n"
     "## Introducción\n"
     "## Planteamiento del problema u oportunidad\n"
-    "## Población afectada y objetivo\n"
     "## Localización\n"
     "## Marco del problema: Causas y efectos\n"
     "## Marco de objetivos: Medios y fines\n"
@@ -282,8 +307,85 @@ def generate_project_document(
     # Título del documento (nivel 0)
     titulo = responses.get("nombre_proyecto") or "Proyecto de Inversión - IDEC/IA"
     doc.add_heading(titulo, level=0)
+    
+    # Texto aclaratorio y recomendaciones que siempre va después del título
+    nota_aclara_md = (
+        "**Nota aclaratoria:** Esta plantilla es bosquejo preliminar para la estructuración del proyecto de inversión. "
+        "Recordar que esta información debe ser validada y trabajada por la entidad pública, dado que no se constituye "
+        "como un documento formal para ser presentado ante la Dirección de Inversiones.\n\n\n"
+        "## Recomendaciones\n\n"
+        "También con el ánimo de fortalecer el documento que se está construyendo se sugiere revisar las guías y documentos "
+        "oficiales sobre formulación de proyectos de inversión, en especial:\n\n"
+        "El Manual de usuario del asistente que lo encuentras en el botón de \"Manual de usuario\"\n\n\n"
+        "Manuales: Metodología General Ajustada para la formulación de proyectos de inversión pública en Colombia; "
+        "Guía orientadora para la definición de productos: "
+        "[Manuales DNP](https://www.dnp.gov.co/LaEntidad_/subdireccion-general-inversiones-seguimiento-evaluacion/direccion-proyectos-informacion-para-inversion-publica/Paginas/manuales.aspx)\n\n\n"
+        "Cadena de valor: Guía de Cadena de Valor\n\n"
+        "Guía para la formulación de indicadores: Guía Metodológica para la formulación de indicadores\n\n"
+        "Instrumento de la MGA que consiste en la estandarización de los bienes y servicios que se pueden financiar y generar "
+        "a través de los recursos públicos que son ejecutados a través de los proyectos de inversión pública. En este archivo "
+        "encontrará la información estandarizada a nivel de sectores, programas y subprogramas; sectores; y productos: "
+        "[Catálogo de Productos](https://colaboracion.dnp.gov.co/CDT/proyectosinformacioninversionpublica/catalogos/CATALOGO_DE_PRODUCTOS.xlsx?Web=1)\n\n\n"
+        "Las guías de recomendaciones para la formulación de proyectos de inversión de la IDEC e IA (Pendiente ruta)\n\n"
+        "Guía de recomendaciones para la formulación de proyectos IDEC e IA para las entidades territoriales: (Pendiente ruta)\n\n\n"
+    )
+    
+    # Agregar el texto aclaratorio al documento
+    for line in nota_aclara_md.splitlines():
+        _add_markdown_line(doc, line)
+    
+    # Agregar el contenido generado por la IA
     for line in md_text.splitlines():
         _add_markdown_line(doc, line)
+    
+    # Texto final que siempre va al final del documento
+    texto_final_md = (
+        "\n\n"
+        "Tener en cuenta que las siguientes secciones deben completarse en el documento final de proyectos de inversión, "
+        "dado que este documento es solo un bosquejo preliminar para la estructuración del proyecto de inversión.\n\n\n"
+        "En la plantilla que se descargue se incorporen elementos adicionales (vacíos) que debe tener el proyecto:\n\n\n"
+        "## Participantes\n\n"
+        "- Identificación de los participantes\n"
+        "- Análisis de los participantes\n\n"
+        "## Población\n\n"
+        "- Población afectada por el problema\n"
+        "- Población objetivo de la intervención\n\n"
+        "## Alternativas de la solución\n\n"
+        "- Soluciones identificadas\n"
+        "- Alternativa de solución seleccionada\n\n"
+        "## Estudio de necesidades\n\n"
+        "- Bien o servicio a entregar o demanda a satisfacer\n"
+        "- Análisis técnico de la alternativa\n"
+        "- Localización de la alternativa\n\n"
+        "## Localización\n\n"
+        "Localización (Región-Departamento-Municipio-Tipo de agrupación-Agrupación-Específica-Latitud-Longitud)\n\n"
+        "## Cadena de valor\n\n"
+        "Estructura del Enfoque de Marco Lógico en la cadena de valor con el desarrollo metodológico de las actividades:\n\n"
+        "- Producto\n"
+        "- Entregable\n"
+        "- Indicador\n"
+        "- Actividad\n\n"
+        "## Análisis de riesgos\n\n"
+        "Análisis de riesgos para la alternativa de solución seleccionada\n\n"
+        "## Análisis de cuantificación\n\n"
+        "Análisis de cuantificación de los ingresos y beneficios\n\n"
+        "## Análisis de la estrategia de sostenibilidad\n\n"
+        "Análisis de la estrategia de sostenibilidad de la alternativa seleccionada\n\n"
+        "## Regionalización de recursos\n\n"
+        "Regionalización de recursos (si aplica)\n\n"
+        "## Focalización de políticas transversales\n\n"
+        "Focalización de políticas transversales (si aplica)\n\n"
+        "### Resumen políticas con característica poblacional\n\n"
+        "- Políticas con población\n"
+        "- Políticas sin población\n"
+        "- Cruce de políticas\n"
+        "- Resumen de focalización\n"
+    )
+    
+    # Agregar el texto final al documento
+    for line in texto_final_md.splitlines():
+        _add_markdown_line(doc, line)
+    
     doc.save(filepath)
     return filepath
 
@@ -302,112 +404,27 @@ def _is_no(txt: str) -> bool:
 
 
 def _num_from_id(id_str: str) -> int:
-    m = re.findall(r"\d+", str(id_str))
-    return int(m[0]) if m else 0
+    """Convierte ID tipo 'C1' o 'O3' a número para ordenar de forma estable."""
+    if not id_str:
+        return 999999
+    digits = ''.join(ch for ch in id_str if ch.isdigit())
+    return int(digits) if digits else 999999
 
 
-# -------------------------- Validación de plantillas --------------------------
-def _count_nonempty(val) -> int:
-    return 1 if (val is not None and str(val).strip() != "") else 0
+def split_sheet_blocks(df: pd.DataFrame):
+    """
+    Divide automáticamente la hoja en dos bloques:
+    - CAUSAS: columnas 0–10
+    - OBJETIVOS: columnas 11–22
+    """
+    CAUSAS_COLS = list(range(0, 11))
+    OBJ_COLS = list(range(11, 23))
 
+    df_causas = df.iloc[:, CAUSAS_COLS].dropna(how="all")
+    df_obj = df.iloc[:, OBJ_COLS].dropna(how="all")
 
-def _validate_ws_causas(ws, start_row: int = 3) -> Tuple[bool, str, str]:
-    total_any = 0
-    any_expected_cells = 0
-    id_hits = 0
-    meaningful_rows = 0
+    return df_causas, df_obj
 
-    pat_causa = re.compile(r"^C\d+$", re.I)
-    pat_ci    = re.compile(r"^C\d+CI\d+$", re.I)
-    pat_ei    = re.compile(r"^C\d+CI\d+EI\d+$", re.I)
-
-    for row in ws.iter_rows(min_row=start_row, values_only=True):
-        vals = list(row)
-        total_any += sum(_count_nonempty(v) for v in vals)
-
-        vals += [None] * (11 - len(vals))
-        A,B,C,D,E,F,G,H,I,J,K = vals[:11]
-
-        any_expected_cells += sum(_count_nonempty(v) for v in (A,B,C,E,F,G,I,J,K))
-
-        a_id = bool(A and pat_causa.match(str(A).strip()))
-        f_id = bool(F and pat_ci.match(str(F).strip()))
-        j_id = bool(J and pat_ei.match(str(J).strip()))
-        id_hits += (1 if a_id else 0) + (1 if f_id else 0) + (1 if j_id else 0)
-
-        direct_ok = a_id and (bool(_count_nonempty(B)) or bool(_count_nonempty(C)))
-        ci_ok     = f_id and bool(_count_nonempty(G))
-        ei_ok     = j_id and bool(_count_nonempty(K))
-        if direct_ok or ci_ok or ei_ok:
-            meaningful_rows += 1
-
-    if total_any == 0:
-        return (False, "empty", "La plantilla está vacía. Diligencia al menos una fila en las columnas requeridas.")
-
-    if meaningful_rows > 0:
-        return (True, "ok", "OK" )
-
-    if any_expected_cells == 0 or id_hits == 0:
-        return (False, "bad_shape", "El archivo no sigue la forma de la plantilla de Causas/Efectos." )
-
-    return (False, "empty", "La plantilla está vacía. Diligencia al menos una fila en las columnas requeridas.")
-
-
-def _validate_ws_objetivos(ws, start_row: int = 3) -> Tuple[bool, str, str]:
-    total_any = 0
-    any_expected_cells = 0
-    id_hits = 0
-    meaningful_rows = 0
-
-    pat_obj  = re.compile(r"^O\d+$", re.I)
-    pat_mi   = re.compile(r"^O\d+MI\d+$", re.I)
-    pat_fi   = re.compile(r"^O\d+MI\d+FI\d+$", re.I)
-
-    for row in ws.iter_rows(min_row=start_row, values_only=True):
-        vals = list(row)
-        total_any += sum(_count_nonempty(v) for v in vals)
-
-        vals += [None] * (12 - len(vals))
-        A,B,C,D,E,F,G,H,I,J,K,L = vals[:12]
-
-        any_expected_cells += sum(_count_nonempty(v) for v in (A,B,C,D,F,G,H,J,K,L))
-
-        a_id = bool(A and pat_obj.match(str(A).strip()))
-        g_id = bool(G and pat_mi.match(str(G).strip()))
-        k_id = bool(K and pat_fi.match(str(K).strip()))
-        id_hits += (1 if a_id else 0) + (1 if g_id else 0) + (1 if k_id else 0)
-
-        direct_ok = a_id and (bool(_count_nonempty(B)) or bool(_count_nonempty(C)) or bool(_count_nonempty(D)))
-        mi_ok     = g_id and bool(_count_nonempty(H))
-        fi_ok     = k_id and bool(_count_nonempty(L))
-        if direct_ok or mi_ok or fi_ok:
-            meaningful_rows += 1
-
-    if total_any == 0:
-        return (False, "empty", "La plantilla está vacía. Diligencia al menos una fila en las columnas requeridas.")
-
-    if meaningful_rows > 0:
-        return (True, "ok", "OK" )
-
-    if any_expected_cells == 0 or id_hits == 0:
-        return (False, "bad_shape", "El archivo no sigue la forma de la plantilla de Objetivos/Medios/Fines." )
-
-    return (False, "empty", "La plantilla está vacía. Diligencia al menos una fila en las columnas requeridas.")
-
-
-def validate_excel_bytes(tipo: str, data: bytes, *, sheet: Optional[str] = None, start_row: int = 3) -> Tuple[bool, str, str]:
-    tipo = (tipo or "").lower()
-    if tipo not in ("causa", "objetivo"):
-        return (False, "bad_type", "Tipo inválido. Use 'causa' u 'objetivo'.")
-    try:
-        wb = load_workbook(BytesIO(data), data_only=True)
-    except Exception:
-        return (False, "not_xlsx", "El archivo no es un Excel válido (.xlsx)." )
-    ws = wb[sheet] if sheet else wb.active
-    if tipo == "causa":
-        return _validate_ws_causas(ws, start_row=start_row)
-    else:
-        return _validate_ws_objetivos(ws, start_row=start_row)
 
 
 # -------------------------- Parsers Excel --------------------------
@@ -610,35 +627,90 @@ def objetivos_tree_to_markdown(tree: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-# -------------------------- Orquestación post-upload --------------------------
+
+def parse_mixed_sheet(filepath: str, sheet: str, start_row: int = 3) -> Dict[str, Any]:
+    """
+    Procesa una hoja que contiene causas y objetivos mezclados.
+    Divide la hoja por bloques y usa los parsers existentes.
+    """
+    df = pd.read_excel(filepath, sheet_name=sheet, header=None)
+
+    causas_df, obj_df = split_sheet_blocks(df)
+
+    # Guardar como excels temporales para usar tus parsers existentes
+    tmp_causas = "/tmp/causas_tmp.xlsx"
+    tmp_obj = "/tmp/objetivos_tmp.xlsx"
+
+    causas_df.to_excel(tmp_causas, index=False, header=False)
+    obj_df.to_excel(tmp_obj, index=False, header=False)
+
+    # Usamos tus parsers originales
+    causas_tree = parse_causas_xlsx(tmp_causas, sheet=None, start_row=start_row)
+    objetivos_tree = parse_objetivos_xlsx(tmp_obj, sheet=None, start_row=start_row)
+
+    return {
+        "causas": causas_tree,
+        "objetivos": objetivos_tree
+    }
+
+
+def parse_excel_all_sheets(filepath: str, start_row: int = 3) -> Dict[str, Any]:
+    wb = load_workbook(filepath, data_only=True)
+    result = {}
+
+    for sheet in wb.sheetnames:
+        parsed = parse_mixed_sheet(filepath, sheet, start_row=start_row)
+
+        # Guardar incluso si alguna parte está vacía
+        result[sheet] = parsed
+
+    return result
+
+
 def process_uploaded_excel(tipo: str, filepath: str, out_dir: str) -> Dict[str, Any]:
-    tipo = (tipo or "").lower()
-    if tipo not in ("causa", "objetivo"):
-        raise ValueError("tipo debe ser 'causa' u 'objetivo'")
-    if tipo == "causa":
-        tree = parse_causas_xlsx(filepath)
-        preview_md = causas_tree_to_markdown(tree)
-    else:
-        tree = parse_objetivos_xlsx(filepath)
-        preview_md = objetivos_tree_to_markdown(tree)
+    """
+    Nuevo proceso general:
+    - Ignora el parámetro 'tipo' porque ya no existen archivos separados.
+    - Procesa todas las hojas.
+    - Genera un JSON estructurado con causas y objetivos por hoja.
+    """
+    trees = parse_excel_all_sheets(filepath)
+
     base = os.path.splitext(os.path.basename(filepath))[0]
-    out_path = save_tree_json(tree, out_dir, base)
-    return {"json_path": out_path, "tree": tree, "preview_md": preview_md}
+    out_path = save_tree_json(trees, out_dir, base)
+
+    return {
+        "json_path": out_path,
+        "tree": trees,
+        "preview_md": None  # opcional, podemos agregar previews por hoja si deseas
+    }
 
 
 # -------------------------- Conversation Flow --------------------------
 conversation_flow = {
     "intro_bienvenida": {
         "prompt":
-            "👋 ¡Hola! Soy tu asistente virtual para ayudarte en la formulación de proyectos de inversión relacionados con Infraestructura de Datos (IDEC) o Inteligencia Artificial (IA). Vamos a empezar paso a paso.\n\n"
-            "Te acompañaré paso a paso para estructurar tu proyecto conforme a la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación.\n\n"
-            "🧰 Te haré preguntas clave para estructurar el proyecto.\n\n"
-            "❓ Antes de continuar, ¿todo está claro? o ¿tienes algunas preguntas?" ,
+            "👋 ¡Hola!\n\n\n"
+            "Soy tu asistente virtual y estoy aquí para acompañarte en la formulación de proyectos de inversión en Infraestructura de Datos (IDEC) y/o Inteligencia Artificial (IA).\n\n"
+            "Te guiaré paso a paso en la formulación preliminar (borrador) del proyecto de inversión, con base en la Metodología General Ajustada (MGA) del Departamento Nacional de Planeación (DNP) y las guías de recomendaciones para la formulación de proyectos de inversión de la IDEC e IA elaboradas por la Dirección de Desarrollo Digital (DDD) del DNP, en acompañamiento la Dirección de Proyectos de Inversión(DPI) -DNP y el Ministerio TIC\n\n\n"
+            "🧩 Durante el proceso:\n\n\n"
+            "Te haré preguntas clave sobre tu proyecto para ayudarte a estructurarlo de manera coherente con base en los  componentes IDEC o IA que aborde tu proyecto.\n\n"
+            "Esta herramienta facilitará la estructuración de los  árboles de problemas y objetivos, la definición de productos e indicadores(cadena de valor)  por componente, con la ayuda de la plantilla precargada que encontrarás en el botón \"Descargar plantillas\"  que orientará la generación de un documento borrador con la información básica del proyecto.\n\n\n"
+            "📘 Recomendación:\n\n"
+            "Antes o durante el uso de este asistente, revisa las guías y documentos oficiales sobre formulación de proyectos de inversión, en especial:\n\n\n"
+            "El Manual de usuario del asistente que lo encuentras en el botón de \"Manual de usuario\"\n\n\n"
+            "Manuales: Metodología General Ajustada para la formulación de proyectos de inversión pública en Colombia; Guía orientadora para la definición de productos: [Manuales DNP](https://www.dnp.gov.co/LaEntidad_/subdireccion-general-inversiones-seguimiento-evaluacion/direccion-proyectos-informacion-para-inversion-publica/Paginas/manuales.aspx)\n\n\n"
+            "Cadena de valor: Guía de Cadena de Valor\n\n"
+            "Guía para la formulación de indicadores: Guía Metodológica para la formulación de indicadores\n\n"
+            "Instrumento de la MGA que consiste en la estandarización de los bienes y servicios que se pueden financiar y generar a través de los recursos públicos que son ejecutados a través de los proyectos de inversión pública. En este archivo encontrará la información estandarizada a nivel de sectores, programas y subprogramas; sectores; y productos: [Catálogo de Productos](https://colaboracion.dnp.gov.co/CDT/proyectosinformacioninversionpublica/catalogos/CATALOGO_DE_PRODUCTOS.xlsx?Web=1)\n\n\n"
+            "Las guías de recomendaciones para la formulación de proyectos de inversión de la IDEC e IA (Pendiente ruta)\n\n\n"
+            "Estos recursos complementan la orientación de este asistente y te ayudarán a fortalecer tu borrador de la propuesta.\n\n\n"
+            "❓ Antes de continuar, ¿todo está claro? o ¿tienes algunas preguntas?",
         "options": [
             "Sí, entiendo el proceso y deseo continuar",
             "Tengo dudas respecto al proceso, me gustaría resolverlas antes de empezar"
         ],
-        "next_step": "pregunta_3_entidad"
+        "next_step": "elige_vertical"
     },
     "gate_1_ciclo": {
         "prompt": "🔎 ¿Conoces el ciclo de inversión pública y las fases que lo componen?",
@@ -648,11 +720,6 @@ conversation_flow = {
     "gate_2_herramienta": {
         "prompt": "🧭 ¿Comprende que esta herramienta es de orientación y que el borrador resultante puede emplearse como insumo o apoyo en la etapa de formulación?",
         "options": ["Sí, lo comprendo", "No, no lo tengo claro"],
-        "next_step": "pregunta_3_entidad"
-    },
-
-    "pregunta_3_entidad": {
-        "prompt": "🏢 ¿Cuál es el nombre de tu entidad?", 
         "next_step": "elige_vertical"
     },
 
@@ -662,8 +729,7 @@ conversation_flow = {
     #},
 
     "elige_vertical": {
-        "prompt": "💡 ¿Deseas construir un proyecto de inversión asociando componentes de tecnologías de la información y las comunicaciones en temas de Infraestructura de datos (IDEC) o Inteligencia Artificial (IA)?",
-        "options": ["Sí, en IDEC", "Sí, en IA", "No (Cierre de la conversación)"],
+        "prompt": "💡 ¿Deseas construir un proyecto de inversión asociando componentes de tecnologías de la información y las comunicaciones en temas de Infraestructura de datos (IDEC) o Inteligencia Artificial (IA)? Puedes seleccionar una o ambas opciones.",
         "next_step": "nombre_proyecto"
     },
 
@@ -673,14 +739,23 @@ conversation_flow = {
         "next_step": "nombre_proyecto"
     },
 
-    "nombre_proyecto": {"prompt": "📝 ¿Cuál es el nombre del proyecto de inversión?", "next_step": "poblacion_afectada"},
-    "poblacion_afectada": {"prompt": "👥 ¿Cuál es la población afectada por el proyecto de inversión? Descríbela y asocia un número", "next_step": "poblacion_objetivo"},
-    "poblacion_objetivo": {"prompt": "🎯 ¿Cuál es la población objetivo que pretende ser beneficiada de la intervención que realiza el proyecto de inversión? Descríbela y asocia un número", "next_step": "localizacion"},
+    "nombre_proyecto": {"prompt": "📝 ¿Cuál es el nombre del proyecto de inversión?", "next_step": "localizacion"},
     "localizacion": {"prompt": "📍 ¿Cuál es la localización en la que se enmarca el proyecto (Ejemplo: Territorial-Territorio Norte, nacional-Colombia, departamental-Cundinamarca)?", "next_step": "problema_oportunidad"},
-    "problema_oportunidad": {"prompt": "🧩 ¿Cuál es la problemática o la oportunidad que tu proyecto de inversión busca atender o resolver?", "next_step": "upload_causas"},
+    "problema_oportunidad": {
+        "prompt": "🧩 ¿Cómo se identifica la problemática o la oportunidad a la cual se dará respuesta mediante el proyecto?\n\n"
+        "**Nota:** Revisa la sección 2.1 MGA: [Documento Conceptual MGA](https://colaboracion.dnp.gov.co/CDT/proyectosinformacioninversionpublica/manuales/documento_conceptual_2023mga.pdf) donde encontrarás recomendaciones para la definición del problema central.\n\n"
+        "Un proyecto nace de la intención de solucionar una situación con efectos negativos en un grupo poblacional o de aprovechar una oportunidad manifiesta dentro de un contexto particular, es decir, busca intervenir un problema para transformarlo. El foco principal de dicha problemática se denomina \"problema central\".",
+        "next_step": "upload_plantilla"
+    },
 
-    "upload_causas": {"prompt": "📄 Cargue la plantilla diligenciada con las causas estructuradas. Recuerde que cada causa debe incluir dos causas indirectas, un efecto directo y un efecto indirecto.", "next_step": "upload_objetivos"},
-    "upload_objetivos": {"prompt": "🎯 Cargue la plantilla diligenciada con los objetivos estructurados. Recuerde que cada objetivo debe incluir un medio directo, al menos un medio indirecto, un fin directo y un fin indirecto.", "next_step": "cadena_valor"},
+    "upload_plantilla": {
+        "prompt": "📄 **Cargar plantilla.**\n\n"
+        "1. Descargue la plantilla en la parte superior del chat.\n"
+        "2. Seleccione la **PlantillaIDEC-IA.xlsx**.\n"
+        "3. Diligénciela con los árboles de problemas, objetivos, productos e indicadores.\n"
+        "4. Súbala en el recuadro que aparece debajo.\n\n",
+        "next_step": "cadena_valor"
+    },
 
     "cadena_valor": {"prompt": "🔗 ¿Cómo se constituye tu cadena de valor?", "next_step": "finalizado"}
 }

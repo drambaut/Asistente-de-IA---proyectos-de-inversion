@@ -10,10 +10,9 @@ from utils import (
     ask_markdown_azure,
     generate_project_document,
     _md_link, _is_yes, _is_no,
-    parse_causas_xlsx, parse_objetivos_xlsx,
     save_tree_json, process_uploaded_excel,
     causas_tree_to_markdown, objetivos_tree_to_markdown,
-    conversation_flow, validate_excel_bytes, 
+    conversation_flow,
     SYSTEM_PRIMER
 )
 
@@ -51,15 +50,39 @@ def index():
 @app.route('/download_templates')
 def download_templates():
     # Ruta a las plantillas de Excel
-    templates_folder = os.path.join(os.getcwd(), "plantillas_excel")
+    templates_folder = os.path.join(BASE_DIR, "plantillas_excel")
+    
+    if not os.path.exists(templates_folder):
+        logger.error(f"La carpeta de plantillas no existe: {templates_folder}")
+        return "Carpeta de plantillas no encontrada", 404
 
-    # Crear ZIP en memoria
+    # Obtener todos los archivos Excel de la carpeta
+    excel_files = []
+    for root, _, files in os.walk(templates_folder):
+        for file in files:
+            if file.lower().endswith(('.xlsx', '.xls')):
+                file_path = os.path.join(root, file)
+                excel_files.append((file_path, file))
+    
+    if not excel_files:
+        logger.error(f"No se encontraron archivos Excel en: {templates_folder}")
+        return "No se encontraron plantillas", 404
+    
+    # Si solo hay un archivo, descargarlo directamente
+    if len(excel_files) == 1:
+        file_path, filename = excel_files[0]
+        return send_file(
+            file_path,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename
+        )
+    
+    # Si hay múltiples archivos, crear ZIP
     memory_file = io.BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for root, _, files in os.walk(templates_folder):
-            for file in files:
-                file_path = os.path.join(root, file)
-                zf.write(file_path, os.path.relpath(file_path, templates_folder))
+        for file_path, filename in excel_files:
+            zf.write(file_path, filename)
     memory_file.seek(0)
 
     return send_file(
@@ -127,59 +150,72 @@ def plantilla(tipo):
     return send_from_directory(BASE_DIR, fname, as_attachment=True)
 
 # ---------- Upload + validación + parse + JSON ----------
-from utils import validate_excel_bytes
-
 @app.route('/api/upload_formulario', methods=['POST'])
 def upload_formulario():
     if 'file' not in request.files:
         return jsonify({"ok": False, "error": "Archivo no recibido"}), 400
     f = request.files['file']
     tipo = (request.form.get('tipo') or '').strip().lower()
-    if tipo not in ('causa', 'objetivo'):
-        return jsonify({"ok": False, "error": "Tipo inválido"}), 400
+    if tipo != 'plantilla':
+        return jsonify({"ok": False, "error": "Solo se acepta el tipo 'plantilla'"}), 400
 
     # Extensión
     original_name = f.filename or ''
     if not original_name.lower().endswith('.xlsx'):
         return jsonify({"ok": False, "error_code": "not_xlsx", "error": "El archivo debe ser un Excel .xlsx."}), 400
 
-    # Validación en memoria
+    # Guardar archivo
     data = f.read()
-    ok, code, message = validate_excel_bytes(tipo, data, start_row=3)
-    if not ok:
-        return jsonify({"ok": False, "error_code": code, "error": message}), 400
-
-    # Guardar + parsear
     proyecto = session.get('responses', {}).get('nombre_proyecto', 'proyecto')
     slug = re.sub(r'[^A-Za-z0-9_\-]+', '_', proyecto).strip('_') or 'proyecto'
-    filename = f"{tipo}-{slug}.xlsx"
+    
+    responses = session.get('responses', {})
+    previews_md = []
+    json_files = []
+    
+    # Procesar plantilla general
+    filename = f"plantilla-{slug}.xlsx"
     save_path = os.path.join(FORMULARIOS_DIR, filename)
     with open(save_path, 'wb') as out:
         out.write(data)
-
-    responses = session.get('responses', {})
-    responses[f"upload_{tipo}"] = filename
+    
+    responses["upload_plantilla"] = filename
     session['responses'] = responses
-
+    
+    # Procesar plantilla general (sin división entre causas y objetivos)
     try:
-        info = process_uploaded_excel(tipo, save_path, FORMULARIOS_JSON_DIR)
-        preview_md = info.get("preview_md")
+        # La función process_uploaded_excel procesa toda la plantilla (causas y objetivos juntos)
+        info = process_uploaded_excel('plantilla', save_path, FORMULARIOS_JSON_DIR)
+        
+        # El árbol contiene todas las hojas procesadas con causas y objetivos
+        trees = info.get("tree", {})
+        
+        # NO guardar los árboles completos en la sesión (son muy grandes para cookies)
+        # Solo guardar referencias a los archivos JSON que ya se guardaron en disco
         json_path = info.get("json_path")
-        json_rel  = os.path.relpath(json_path, app.static_folder).replace('\\','/')
-        if tipo == 'causa':
-            session['causas_tree'] = info.get("tree")
-        else:
-            session['objetivos_tree'] = info.get("tree")
+        if json_path:
+            json_rel = os.path.relpath(json_path, app.static_folder).replace('\\','/')
+            json_files.append(json_rel)
+            
+            # Guardar solo la referencia al archivo JSON en la sesión (no los árboles completos)
+            # Los árboles se cargarán desde el archivo JSON cuando se necesiten
+            session['plantilla_json_path'] = json_path
+            session['causas_json_path'] = json_path  # Para compatibilidad
+            session['objetivos_json_path'] = json_path  # Para compatibilidad
+        
+        preview_md = info.get("preview_md", "")
+        if preview_md:
+            previews_md.append(preview_md)
+        
+        return jsonify({
+            "ok": True,
+            "filename": filename,
+            "json_files": json_files,
+            "preview_md": "\n\n".join(previews_md) if previews_md else "✅ Plantilla procesada correctamente."
+        })
     except Exception as e:
-        logger.exception("Error procesando Excel subido")
-        return jsonify({"ok": False, "error_code": "parse_error", "error": "No se pudo procesar el Excel. Verifique la plantilla."}), 400
-
-    return jsonify({
-        "ok": True,
-        "filename": filename,
-        "json_file": json_rel,
-        "preview_md": preview_md
-    })
+        logger.exception("Error procesando plantilla general")
+        return jsonify({"ok": False, "error_code": "parse_error", "error": f"Error al procesar la plantilla: {str(e)}"}), 400
 
 @app.route('/reset', methods=['POST'])
 def reset_conversation():
@@ -225,12 +261,13 @@ def chat_alt():
 
 # ---------- Flujo ----------
 def _upload_prompt_with_link(step_key: str) -> str:
-    if step_key == 'upload_causas':
-        url = url_for('plantilla', tipo='causa')
-        return f"**Cargar plantilla de causas.**\n\n1. Descargue las plantillas en la parte superior del chat.\n2. Seleccione la **PlantillaCausa.xlsx**.\n3. Diligénciela.\n4. Súbala en el recuadro que aparece debajo.\n\n"
-    else:
-        url = url_for('plantilla', tipo='objetivo')
-        return f"**Cargar plantilla de objetivos.**\n\n1. Descargue las plantillas en la parte superior del chat.\n2. Seleccione la **PlantillaObjetivo.xlsx**.\n3. Diligénciela.\n4. Súbala en el recuadro que aparece debajo.\n\n"
+    if step_key == 'upload_plantilla':
+        return ("📄 **Cargar plantilla.**\n\n"
+                "1. Descargue la plantilla en la parte superior del chat.\n"
+                "2. Seleccione la **PlantillaIDEC-IA.xlsx**.\n"
+                "3. Diligénciela con los árboles de problemas, objetivos, productos e indicadores.\n"
+                "4. Súbala en el recuadro que aparece debajo.\n\n")
+    return ""
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -258,6 +295,20 @@ def chat():
     if current_step == 'intro_bienvenida' and user_lower == 'sí, entiendo el proceso y deseo continuar':
         session['current_step'] = conversation_flow['intro_bienvenida']['next_step']
         step = conversation_flow[session['current_step']]
+        # Si es elige_vertical, mostrar multiselección
+        if session['current_step'] == 'elige_vertical':
+            return jsonify({
+                "response": step['prompt'] + "\n\nSelecciona una o más opciones y pulsa **Confirmar**.",
+                "current_step": "elige_vertical",
+                "format": "markdown",
+                "multiselect": {
+                    "items": [
+                        "IDEC",
+                        "IA"
+                    ],
+                    "submit_text": "Confirmar"
+                }
+            })
         payload = {"response": step['prompt'], "current_step": session['current_step'], "format": "markdown"}
         if "options" in step: payload["options"] = step["options"]
         return jsonify(payload)
@@ -267,6 +318,21 @@ def chat():
         step_key = session.get('current_step', 'intro_bienvenida')
         step_conf = conversation_flow.get(step_key, {})
         resp_text = step_conf.get("prompt", "…")
+
+        if step_key == 'elige_vertical':
+            step = conversation_flow['elige_vertical']
+            return jsonify({
+                "response": step['prompt'] + "\n\nSelecciona una o más opciones y pulsa **Confirmar**.",
+                "current_step": "elige_vertical",
+                "format": "markdown",
+                "multiselect": {
+                    "items": [
+                        "IDEC",
+                        "IA"
+                    ],
+                    "submit_text": "Confirmar"
+                }
+            })
 
         if step_key == 'idec_componentes':
             step = conversation_flow['idec_componentes']
@@ -287,12 +353,11 @@ def chat():
                 }
             })
 
-        if step_key in ('upload_causas','upload_objetivos'):
+        if step_key == 'upload_plantilla':
             resp_text = _upload_prompt_with_link(step_key)
-            tipo = 'causa' if step_key == 'upload_causas' else 'objetivo'
             return jsonify({
                 "response": resp_text, "current_step": step_key, "format": "markdown",
-                "upload": {"expect_upload": True, "tipo": tipo, "download_url": url_for('plantilla', tipo=tipo)}
+                "upload": {"expect_upload": True, "tipo": "plantilla", "download_url": url_for('download_templates')}
             })
         payload = {"response": resp_text, "current_step": step_key, "format": "markdown"}
         if "options" in step_conf: payload["options"] = step_conf["options"]
@@ -316,11 +381,25 @@ def chat():
         if _is_yes(user_lower):
             session['current_step'] = conversation_flow['gate_2_herramienta']['next_step']
             step = conversation_flow[session['current_step']]
+            # Si es elige_vertical, mostrar multiselección
+            if session['current_step'] == 'elige_vertical':
+                return jsonify({
+                    "response": step['prompt'] + "\n\nSelecciona una o más opciones y pulsa **Confirmar**.",
+                    "current_step": "elige_vertical",
+                    "format": "markdown",
+                    "multiselect": {
+                        "items": [
+                            "IDEC",
+                            "IA"
+                        ],
+                        "submit_text": "Confirmar"
+                    }
+                })
             payload = {"response": step['prompt'], "current_step": session['current_step'], "format": "markdown"}
             if "options" in step: payload["options"] = step["options"]
             return jsonify(payload)
         elif _is_no(user_lower):
-            session['after_alt_next_step'] = "pregunta_3_entidad"
+            session['after_alt_next_step'] = "elige_vertical"
             md = _bootstrap_alt_explanation("Explica por qué esta herramienta es de orientación y cómo el borrador sirve como insumo en formulación (MGA).")
             return jsonify({"response": md, "format": "markdown"})
         else:
@@ -333,43 +412,87 @@ def chat():
         session['responses'] = responses
         session['current_step'] = 'elige_vertical'
         step = conversation_flow['elige_vertical']
-        return jsonify({"response": step['prompt'], "current_step": "elige_vertical", "options": step['options'], "format": "markdown"})
+        return jsonify({
+            "response": step['prompt'] + "\n\nSelecciona una o más opciones y pulsa **Confirmar**.",
+            "current_step": "elige_vertical",
+            "format": "markdown",
+            "multiselect": {
+                "items": [
+                    "IDEC",
+                    "IA"
+                ],
+                "submit_text": "Confirmar"
+            }
+        })
 
-    # Elegir vertical
+    # Elegir vertical (multiselección)
     if current_step == 'elige_vertical':
-        choice = user_lower.strip()
-        if 'cerrar la conversación' in choice or choice == 'no' or choice.startswith('no '):
-            session['current_step'] = 'finalizado'
-            msg = "❌ Este asistente solo atiende proyectos **IDEC/IA**. Se cierra la conversación. Usa *Reiniciar* para empezar de nuevo."
-            return jsonify({"response": msg, "current_step": "finalizado", "format": "markdown"})
-        elif 'idec' in choice:
-            responses['vertical'] = 'IDEC'; session['responses'] = responses
-            session['current_step'] = 'idec_componentes'
-            step = conversation_flow['idec_componentes']
+        if user_message.startswith('__msel__:'):
+            raw = user_message.split(':', 1)[1]
+            selected = [v.strip() for v in raw.split('|') if v.strip()]
+            
+            if not selected:
+                session['current_step'] = 'finalizado'
+                msg = "❌ Este asistente solo atiende proyectos **IDEC/IA**. Se cierra la conversación. Usa *Reiniciar* para empezar de nuevo."
+                return jsonify({"response": msg, "current_step": "finalizado", "format": "markdown"})
+            
+            # Normalizar las selecciones
+            has_idec = any('idec' in s.lower() for s in selected)
+            has_ia = any('ia' in s.lower() or 'inteligencia artificial' in s.lower() for s in selected)
+            
+            # Guardar las verticales seleccionadas
+            verticales = []
+            if has_idec:
+                verticales.append('IDEC')
+            if has_ia:
+                verticales.append('IA')
+            responses['vertical'] = ' y '.join(verticales) if len(verticales) > 1 else verticales[0] if verticales else 'Ninguna'
+            session['responses'] = responses
+            
+            # Si incluye IDEC, va a seleccionar componentes primero
+            if has_idec:
+                session['current_step'] = 'idec_componentes'
+                step = conversation_flow['idec_componentes']
+                return jsonify({
+                    "response": step['prompt'] + "\n\nSelecciona una o más tarjetas y pulsa **Confirmar**.",
+                    "current_step": "idec_componentes",
+                    "format": "markdown",
+                    "multiselect": {
+                        "items": [
+                            "Gobernanza de datos",
+                            "Interoperabilidad",
+                            "Herramientas técnicas y tecnológicas",
+                            "Seguridad y privacidad de datos",
+                            "Datos",
+                            "Aprovechamiento de datos"
+                        ],
+                        "submit_text": "Confirmar"
+                    }
+                })
+            # Si solo IA, va directo a nombre_proyecto
+            elif has_ia:
+                session['current_step'] = conversation_flow['elige_vertical']['next_step']  # nombre_proyecto
+                step = conversation_flow[session['current_step']]
+                return jsonify({"response": step['prompt'], "current_step": session['current_step'], "format": "markdown"})
+            else:
+                session['current_step'] = 'finalizado'
+                msg = "❌ Este asistente solo atiende proyectos **IDEC/IA**. Se cierra la conversación. Usa *Reiniciar* para empezar de nuevo."
+                return jsonify({"response": msg, "current_step": "finalizado", "format": "markdown"})
+        else:
+            # Mostrar multiselección
+            step = conversation_flow['elige_vertical']
             return jsonify({
-                "response": step['prompt'] + "\n\nSelecciona una o más tarjetas y pulsa **Confirmar**.",
-                "current_step": "idec_componentes",
+                "response": step['prompt'] + "\n\nSelecciona una o más opciones y pulsa **Confirmar**.",
+                "current_step": "elige_vertical",
                 "format": "markdown",
                 "multiselect": {
                     "items": [
-                        "Gobernanza de datos",
-                        "Interoperabilidad",
-                        "Herramientas técnicas y tecnológicas",
-                        "Seguridad y privacidad de datos",
-                        "Datos",
-                        "Aprovechamiento de datos"
+                        "IDEC",
+                        "IA"
                     ],
                     "submit_text": "Confirmar"
                 }
             })
-        elif 'ia' in choice:
-            responses['vertical'] = 'IA'; session['responses'] = responses
-            session['current_step'] = conversation_flow['elige_vertical']['next_step']  # nombre_proyecto
-            step = conversation_flow[session['current_step']]
-            return jsonify({"response": step['prompt'], "current_step": session['current_step'], "format": "markdown"})
-        else:
-            step = conversation_flow['elige_vertical']
-            return jsonify({"response": step['prompt'], "current_step": "elige_vertical", "options": step['options'], "format": "markdown"})
 
     # IDEC multiselección
     if current_step == 'idec_componentes':
@@ -401,35 +524,38 @@ def chat():
         })
 
     # PASOS DE CARGA
-    if current_step in ('upload_causas', 'upload_objetivos'):
+    if current_step == 'upload_plantilla':
         step_key = current_step
-        tipo = 'causa' if step_key == 'upload_causas' else 'objetivo'
-        required_flag = f"upload_{tipo}"
+        required_flag = "upload_plantilla"
 
-        if re.search(r'\b(continuar|siguiente)\b', user_lower):
+        # Solo procesar si el usuario explícitamente intenta continuar (no mensajes vacíos)
+        if user_message and user_message.strip() and re.search(r'\b(continuar|siguiente)\b', user_lower):
             if required_flag in session.get('responses', {}):
+                # Archivo subido, avanzar al siguiente paso
                 next_step = conversation_flow[step_key]['next_step']
                 session['current_step'] = next_step
                 step_conf = conversation_flow[next_step]
                 text = step_conf.get("prompt", "…")
                 payload = {"response": text, "current_step": next_step, "format": "markdown"}
                 if "options" in step_conf: payload["options"] = step_conf["options"]
-                if next_step in ('upload_causas', 'upload_objetivos'):
-                    next_tipo = 'causa' if next_step == 'upload_causas' else 'objetivo'
+                if next_step == 'upload_plantilla':
                     payload["response"] = _upload_prompt_with_link(next_step)
-                    payload["upload"] = {"expect_upload": True, "tipo": next_tipo, "download_url": url_for('plantilla', tipo=next_tipo)}
+                    payload["upload"] = {"expect_upload": True, "tipo": "plantilla", "download_url": url_for('download_templates')}
                 return jsonify(payload)
             else:
+                # Usuario intenta continuar sin haber subido el archivo
                 text = _upload_prompt_with_link(step_key) + "\n\n> ⚠️ Aún no has subido el archivo. Por favor súbelo y luego escribe **Continuar**."
                 return jsonify({
                     "response": text, "current_step": step_key, "format": "markdown",
-                    "upload": {"expect_upload": True, "tipo": tipo, "download_url": url_for('plantilla', tipo=tipo)}
+                    "upload": {"expect_upload": True, "tipo": "plantilla", "download_url": url_for('download_templates')}
                 })
 
+        # Si el usuario no ha escrito "continuar" explícitamente, solo mostrar el mensaje básico sin advertencia
+        # Esto incluye cuando el usuario llega al paso por primera vez o escribe cualquier otra cosa
         text = _upload_prompt_with_link(step_key)
         return jsonify({
             "response": text, "current_step": step_key, "format": "markdown",
-            "upload": {"expect_upload": True, "tipo": tipo, "download_url": url_for('plantilla', tipo=tipo)}
+            "upload": {"expect_upload": True, "tipo": "plantilla", "download_url": url_for('download_templates')}
         })
 
     # Guardar y avanzar (genérico)
@@ -440,12 +566,13 @@ def chat():
     if (not next_step) or (next_step == "finalizado"):
         session['current_step'] = "finalizado"
         # ---- Generar documento enriquecido con árboles ----
+        # Los árboles no están en la sesión (muy grandes para cookies), se cargarán desde JSON
         filepath = generate_project_document(
             responses,
             client=client,
             documents_dir=DOCUMENTS_DIR,
-            causas_tree=session.get('causas_tree'),
-            objetivos_tree=session.get('objetivos_tree'),
+            causas_tree=None,  # Se cargará desde JSON
+            objetivos_tree=None,  # Se cargará desde JSON
             formularios_json_dir=FORMULARIOS_JSON_DIR
         )
         filename = os.path.basename(filepath)
@@ -457,10 +584,9 @@ def chat():
     text = step_conf.get("prompt", "…")
     payload = {"response": text, "current_step": next_step, "format": "markdown"}
     if "options" in step_conf: payload["options"] = step_conf["options"]
-    if next_step in ('upload_causas','upload_objetivos'):
-        next_tipo = 'causa' if next_step == 'upload_causas' else 'objetivo'
+    if next_step == 'upload_plantilla':
         payload["response"] = _upload_prompt_with_link(next_step)
-        payload["upload"]  = {"expect_upload": True, "tipo": next_tipo, "download_url": url_for('plantilla', tipo=next_tipo)}
+        payload["upload"]  = {"expect_upload": True, "tipo": "plantilla", "download_url": url_for('download_templates')}
     return jsonify(payload)
 
 if __name__ == '__main__':
