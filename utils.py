@@ -754,8 +754,6 @@ conversation_flow = {
         "2. Seleccione la **PlantillaIDEC-IA.xlsx**.\n"
         "3. Diligénciela con los árboles de problemas, objetivos, productos e indicadores.\n"
         "4. Súbala en el recuadro que aparece debajo.\n\n",
-        "next_step": "cadena_valor"
-    },
-
-    "cadena_valor": {"prompt": "🔗 ¿Cómo se constituye tu cadena de valor?", "next_step": "finalizado"}
+        "next_step": "finalizado"
+    }
 }
